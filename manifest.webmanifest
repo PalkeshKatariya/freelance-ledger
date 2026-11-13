@@ -1,0 +1,10 @@
+{
+  "name": "Freelance Ledger",
+  "short_name": "Ledger",
+  "description": "A private accounting tracker for freelancers.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f8f6",
+  "theme_color": "#0b5c54",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
