@@ -14,7 +14,8 @@ const emptyData = () => ({
     gstin: "",
     invoicePrefix: "TB",
     nextInvoice: 1,
-    defaultDueDays: 15
+    defaultDueDays: 15,
+    theme: "light"
   },
   clients: [],
   projects: [],
@@ -22,6 +23,28 @@ const emptyData = () => ({
   payments: [],
   expenses: []
 });
+
+function applyTheme(theme) {
+  const t = theme === "dark" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", t);
+  localStorage.setItem("theme", t);
+  if (data && data.settings) {
+    data.settings.theme = t;
+  }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute("content", t === "dark" ? "#0c1017" : "#ff5722");
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || data.settings?.theme || "light";
+  const next = current === "dark" ? "light" : "dark";
+  applyTheme(next);
+  save();
+  render();
+  notify(`Switched to ${next === "dark" ? "Dark Mode 🌙" : "Light Mode ☀️"}`);
+}
 
 let data = load();
 let currentView = (location.hash.slice(1) && !location.hash.includes("access_token")) ? location.hash.slice(1) : "dashboard";
@@ -195,6 +218,9 @@ async function pullFromSupabase() {
     if (row && row.data && typeof row.data === "object" && Array.isArray(row.data.invoices)) {
       data = { ...emptyData(), ...row.data, settings: { ...emptyData().settings, ...row.data.settings } };
       localStorage.setItem(KEY, JSON.stringify(data));
+      if (data.settings?.theme) {
+        applyTheme(data.settings.theme);
+      }
       render();
       updateSyncIndicator();
     } else if (data.clients.length || data.invoices.length || data.expenses.length) {
@@ -1262,6 +1288,17 @@ function settings() {
         <div class="settings-list">
           <div class="settings-row">
             <div>
+              <div class="primary-text">Appearance & Theme</div>
+              <p class="help">
+                Active: <strong style="color:var(--accent-orange);">${(document.documentElement.getAttribute("data-theme") === "dark" || data.settings?.theme === "dark") ? "Dark Mode 🌙" : "Light Mode ☀️"}</strong>
+              </p>
+            </div>
+            <button class="pill-btn ${(document.documentElement.getAttribute("data-theme") === "dark" || data.settings?.theme === "dark") ? "pill-btn-neon" : "pill-btn-navy"} pill-btn-sm" data-action="toggle-theme">
+              ${(document.documentElement.getAttribute("data-theme") === "dark" || data.settings?.theme === "dark") ? "☀️ Switch to Light" : "🌙 Switch to Dark"}
+            </button>
+          </div>
+          <div class="settings-row">
+            <div>
               <div class="primary-text">Supabase Cross-Device Sync</div>
               <p class="help">
                 ${currentUser ? `Active: <strong style="color:var(--color-positive);">${escape(currentUser.email)}</strong>` : "Sign in to synchronize invoices & payments between your phone and laptop in real-time."}
@@ -1720,6 +1757,7 @@ document.addEventListener("click", event => {
   else if (action === "import-backup") document.getElementById("import-file").click();
   else if (action === "export-expenses") exportExpenses();
   else if (action === "export-report") exportReport();
+  else if (action === "toggle-theme") toggleTheme();
   else if (action === "print") window.print();
   else if (action === "clear-data") {
     if (confirm("Clear every record from this device? This cannot be undone.")) {
@@ -1912,6 +1950,7 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// Initial render & Supabase Auth check
+// Initial theme, render & Supabase Auth check
+applyTheme(data.settings?.theme || localStorage.getItem("theme") || "light");
 render();
 initAuth();

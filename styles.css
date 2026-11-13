@@ -53,6 +53,184 @@
   background-color: var(--bg-canvas);
 }
 
+/* ==========================================================================
+   FINTECH DARK MODE PALETTE
+   ========================================================================== */
+[data-theme="dark"] {
+  --bg-canvas: #0c1017;
+  --bg-card: #151b23;
+  --bg-card-hover: #1c232d;
+  --bg-elevated: #1e2632;
+  --bg-elevated-hover: #263140;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: #273142;
+  --border-card-hover: #3d4a60;
+
+  --accent-orange: #ff6838;
+  --accent-orange-hover: #ff7d52;
+  --accent-orange-glow: rgba(255, 104, 56, 0.4);
+  --accent-orange-dim: rgba(255, 104, 56, 0.2);
+  --accent-orange-gradient: linear-gradient(135deg, #d84315 0%, #ff5722 55%, #ff7043 100%);
+
+  --accent-navy: #080b0f;
+  --accent-navy-hover: #040608;
+  --accent-white: #ffffff;
+
+  --text-primary: #f0f6fc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-light: #ffffff;
+  --text-dark: #0c1017;
+
+  --color-positive: #34d399;
+  --color-positive-bg: rgba(52, 211, 153, 0.16);
+  --color-due: #fb923c;
+  --color-due-bg: rgba(251, 146, 60, 0.16);
+  --color-overdue: #f87171;
+  --color-overdue-bg: rgba(248, 113, 113, 0.16);
+  --color-draft: #94a3b8;
+  --color-draft-bg: rgba(148, 163, 184, 0.16);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 6px 20px rgba(255, 87, 34, 0.35);
+}
+
+/* Dark Mode Component Overrides */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: #0c1017;
+  color: #f0f6fc;
+  border-color: #273142;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  background: #151b23;
+  border-color: var(--accent-orange);
+}
+
+[data-theme="dark"] .search {
+  background: #0c1017;
+  color: #f0f6fc;
+  border-color: #273142;
+}
+
+[data-theme="dark"] .search:focus {
+  background: #151b23;
+  border-color: var(--accent-orange);
+}
+
+[data-theme="dark"] .topbar {
+  background: rgba(12, 16, 23, 0.92);
+  border-bottom-color: #273142;
+}
+
+[data-theme="dark"] .sidebar {
+  background: #151b23;
+  border-right-color: #273142;
+}
+
+[data-theme="dark"] .sidebar-nav a:hover {
+  background: #1c232d;
+  color: #f0f6fc;
+}
+
+[data-theme="dark"] .sidebar-nav a.active {
+  background: rgba(255, 104, 56, 0.16);
+  color: var(--accent-orange);
+}
+
+[data-theme="dark"] .storage-card {
+  background: #0c1017;
+  border-color: #273142;
+}
+
+[data-theme="dark"] th {
+  background: #1e2632;
+  border-bottom-color: #273142;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] td {
+  border-top-color: #212632;
+}
+
+[data-theme="dark"] .pill-btn-ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f0f6fc;
+  border-color: #273142;
+}
+
+[data-theme="dark"] .pill-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .pill-btn-white:not(.hero-actions .pill-btn-white):not(.featured-card-orange .pill-btn-white) {
+  background: #1e2632;
+  color: #f0f6fc;
+  border-color: #273142;
+}
+
+[data-theme="dark"] .pill-btn-white:not(.hero-actions .pill-btn-white):not(.featured-card-orange .pill-btn-white):hover {
+  background: #263140;
+}
+
+[data-theme="dark"] .modal {
+  background: #151b23;
+  border-color: #273142;
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom-color: #273142;
+}
+
+[data-theme="dark"] .modal-backdrop {
+  background: rgba(5, 8, 12, 0.7);
+}
+
+[data-theme="dark"] .notice {
+  background: rgba(255, 104, 56, 0.12);
+  border-color: rgba(255, 104, 56, 0.28);
+  color: #ff8a65;
+}
+
+[data-theme="dark"] .auth-status-card {
+  background: rgba(255, 104, 56, 0.1);
+  border-color: rgba(255, 104, 56, 0.25);
+}
+
+[data-theme="dark"] .auth-tabs {
+  background: #0c1017;
+  border-color: #273142;
+}
+
+[data-theme="dark"] .auth-tab-btn.active {
+  background: #1e2632;
+  color: var(--accent-orange);
+}
+
+[data-theme="dark"] .mobile-nav-capsule {
+  background: rgba(21, 27, 35, 0.95);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .bar-pill.expense {
+  background: #334155;
+}
+
+[data-theme="dark"] .chart-legend .navy {
+  background: #334155;
+}
+
+[data-theme="dark"] .brand-avatar {
+  background: #1e2632;
+  border-color: #273142;
+}
+
 * {
   box-sizing: border-box;
 }

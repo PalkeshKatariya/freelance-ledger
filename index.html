@@ -12,6 +12,20 @@
   <meta name="description"
     content="A warm, modern freelance financial dashboard with real-time graphs and offline privacy." />
   <script>
+    // Immediate dark mode application before paint
+    var _theme = localStorage.getItem('theme');
+    if (!_theme) {
+      try {
+        var _d = JSON.parse(localStorage.getItem('total-berries-clean-v1') || '{}');
+        _theme = _d?.settings?.theme;
+      } catch(e) {}
+    }
+    if (_theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+
     // Force immediate purge of stale service worker caches and any leftover fake/demo data
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function (regs) {
@@ -21,7 +35,7 @@
     if ('caches' in window) {
       caches.keys().then(function (keys) {
         keys.forEach(function (k) {
-          if (k !== 'total-berries-v11') { caches.delete(k); }
+          if (k !== 'total-berries-v12') { caches.delete(k); }
         });
       });
     }
@@ -38,7 +52,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=8.0" />
+  <link rel="stylesheet" href="styles.css?v=9.0" />
   <title>Total Berries · Freelance Ledger</title>
 </head>
 
@@ -260,7 +274,7 @@
   <input id="import-file" type="file" accept="application/json" hidden />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=10.0"></script>
+  <script src="app.js?v=11.0"></script>
 </body>
 
 </html>
