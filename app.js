@@ -24,7 +24,7 @@ const emptyData = () => ({
 });
 
 let data = load();
-let currentView = location.hash.slice(1) || "dashboard";
+let currentView = (location.hash.slice(1) && !location.hash.includes("access_token")) ? location.hash.slice(1) : "dashboard";
 let searchText = "";
 let selectedTimeframe = "1M";
 let toastTimer;
@@ -139,12 +139,22 @@ async function initAuth() {
     currentUser = session?.user || null;
     updateSyncIndicator();
     if (currentUser) {
+      if (location.hash && location.hash.includes("access_token")) {
+        history.replaceState(null, "", location.pathname + "#dashboard");
+        currentView = "dashboard";
+        render();
+      }
       await pullFromSupabase();
     }
     sb.auth.onAuthStateChange(async (event, session) => {
       currentUser = session?.user || null;
       updateSyncIndicator();
       if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && currentUser) {
+        if (location.hash && location.hash.includes("access_token")) {
+          history.replaceState(null, "", location.pathname + "#dashboard");
+          currentView = "dashboard";
+          render();
+        }
         await pullFromSupabase();
       }
     });
@@ -314,7 +324,12 @@ async function handleAuthSubmit(form) {
   notify("Authenticating with Supabase...");
   try {
     if (mode === "signup") {
-      const { data: res, error } = await sb.auth.signUp({ email, password });
+      const redirectUrl = window.location.origin;
+      const { data: res, error } = await sb.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: redirectUrl }
+      });
       if (error) throw error;
       if (res.user && !res.session) {
         closeModal();
@@ -348,7 +363,11 @@ async function sendMagicLink() {
 
   notify("Sending login link...");
   try {
-    const { error } = await sb.auth.signInWithOtp({ email });
+    const redirectUrl = window.location.origin;
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirectUrl }
+    });
     if (error) throw error;
     closeModal();
     notify("Check your email for the 1-click login link!");

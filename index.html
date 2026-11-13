@@ -21,7 +21,7 @@
     if ('caches' in window) {
       caches.keys().then(function(keys) {
         keys.forEach(function(k) {
-          if (k !== 'total-berries-v8') { caches.delete(k); }
+          if (k !== 'total-berries-v9') { caches.delete(k); }
         });
       });
     }
@@ -259,7 +259,7 @@
   <input id="import-file" type="file" accept="application/json" hidden />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=7.0"></script>
+  <script src="app.js?v=8.0"></script>
 </body>
 
 </html>
