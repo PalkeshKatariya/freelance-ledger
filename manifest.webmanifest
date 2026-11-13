@@ -1,17 +1,10 @@
 {
   "name": "Total Berries Ledger",
   "short_name": "Ledger",
-  "description": "Modern dark accounting & freelance ledger with real-time financial graphs.",
+  "description": "Warm modern accounting & freelance ledger inspired by Calfo.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0e1309",
-  "theme_color": "#0e1309",
-  "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
-  ]
+  "background_color": "#f8f6f2",
+  "theme_color": "#ff5722",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
 }

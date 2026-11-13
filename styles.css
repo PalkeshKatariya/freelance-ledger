@@ -1,47 +1,57 @@
 :root {
-  --bg-canvas: #0e1309;
-  --bg-card: #161e11;
-  --bg-card-hover: #1c2616;
-  --bg-elevated: #212c1a;
-  --bg-elevated-hover: #293620;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-card: #28341f;
-  --border-card-hover: #3b4d2f;
+  /* Warm Sunset & Slate Palette (from Calfo reference) */
+  --bg-canvas: #f8f6f2;
+  --bg-card: #ffffff;
+  --bg-card-hover: #faf8f5;
+  --bg-elevated: #f1ede5;
+  --bg-elevated-hover: #e7e2d8;
+  --border-subtle: rgba(35, 45, 63, 0.06);
+  --border-card: #ece6dc;
+  --border-card-hover: #ded6c9;
 
-  --accent-lime: #c8f53c;
-  --accent-lime-hover: #d6ff47;
-  --accent-lime-glow: rgba(200, 245, 60, 0.28);
-  --accent-lime-dim: rgba(200, 245, 60, 0.12);
+  /* Radiant Sunset Orange (from Calfo hero cards & brand) */
+  --accent-orange: #ff5722;
+  --accent-orange-hover: #f04a14;
+  --accent-orange-glow: rgba(255, 87, 34, 0.32);
+  --accent-orange-dim: rgba(255, 87, 34, 0.12);
+  --accent-orange-gradient: linear-gradient(135deg, #ff5722 0%, #ff6f33 50%, #ff8843 100%);
+
+  /* Contrast Deep Slate Navy (from Calfo CTA buttons) */
+  --accent-navy: #232d3f;
+  --accent-navy-hover: #192130;
   --accent-white: #ffffff;
 
-  --text-primary: #f5f8f2;
-  --text-secondary: #92a188;
-  --text-muted: #5e6d56;
-  --text-dark: #0e1309;
+  /* Typography */
+  --text-primary: #19212d;
+  --text-secondary: #5f6b7c;
+  --text-muted: #8c9ba8;
+  --text-light: #ffffff;
+  --text-dark: #19212d;
 
-  --color-positive: #c8f53c;
-  --color-due: #f3be43;
-  --color-due-bg: rgba(243, 190, 67, 0.15);
-  --color-overdue: #ff5757;
-  --color-overdue-bg: rgba(255, 87, 87, 0.15);
-  --color-draft: #8c9b84;
-  --color-draft-bg: rgba(140, 155, 132, 0.15);
+  /* Status Colors */
+  --color-positive: #10b981;
+  --color-positive-bg: rgba(16, 185, 129, 0.12);
+  --color-due: #ff7a38;
+  --color-due-bg: rgba(255, 122, 56, 0.14);
+  --color-overdue: #ef4444;
+  --color-overdue-bg: rgba(239, 68, 68, 0.12);
+  --color-draft: #64748b;
+  --color-draft-bg: rgba(100, 116, 139, 0.12);
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --radius-xl: 28px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 30px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
-  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 25px rgba(200, 245, 60, 0.22);
+  --shadow-sm: 0 2px 8px rgba(35, 45, 63, 0.04);
+  --shadow-card: 0 8px 24px rgba(35, 45, 63, 0.05), 0 1px 3px rgba(35, 45, 63, 0.02);
+  --shadow-glow: 0 6px 20px rgba(255, 87, 34, 0.28);
 
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-primary);
   background-color: var(--bg-canvas);
 }
-
 
 * {
   box-sizing: border-box;
@@ -60,15 +70,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-button,
-input,
-select,
-textarea {
+button, input, select, textarea {
   font-family: inherit;
 }
 
-button,
-a {
+button, a {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -83,16 +89,13 @@ button {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: var(--bg-canvas);
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--border-card);
   border-radius: var(--radius-full);
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
@@ -102,7 +105,7 @@ button {
    ========================================================================== */
 .topbar {
   height: 72px;
-  background: rgba(14, 19, 9, 0.85);
+  background: rgba(248, 246, 242, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-card);
@@ -132,22 +135,21 @@ button {
 .brand-avatar {
   width: 42px;
   height: 42px;
-  background: var(--bg-elevated);
-  border: 1.5px solid var(--border-card);
+  background: var(--accent-orange);
   border-radius: 50%;
   display: grid;
   place-items: center;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 14px var(--accent-orange-glow);
+  transition: transform 0.2s ease;
 }
 
 .brand:hover .brand-avatar {
-  transform: scale(1.05);
-  border-color: var(--accent-lime);
+  transform: scale(1.06);
 }
 
 .brand-emoji {
   font-size: 20px;
+  color: #ffffff;
 }
 
 .brand-info {
@@ -165,8 +167,8 @@ button {
 
 .brand-tagline {
   font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 600;
+  color: var(--accent-orange);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -178,7 +180,7 @@ button {
 }
 
 /* ==========================================================================
-   BUTTONS (Modern Themed Pill Buttons from Reference)
+   BUTTONS (Modern Themed Pill Buttons from Calfo Reference)
    ========================================================================== */
 .pill-btn {
   display: inline-flex;
@@ -214,41 +216,59 @@ button {
   line-height: 1;
 }
 
-/* Neon Lime Button (Primary Action) */
-.pill-btn-neon {
-  background: var(--accent-lime);
-  color: var(--text-dark);
-  box-shadow: 0 4px 16px var(--accent-lime-glow);
+/* Primary Sunset Orange Button */
+.pill-btn-neon, .pill-btn-orange {
+  background: var(--accent-orange);
+  color: #ffffff;
+  box-shadow: 0 4px 16px var(--accent-orange-glow);
 }
 
-.pill-btn-neon:hover {
-  background: var(--accent-lime-hover);
-  box-shadow: 0 6px 22px rgba(200, 245, 60, 0.4);
+.pill-btn-neon:hover, .pill-btn-orange:hover {
+  background: var(--accent-orange-hover);
+  box-shadow: 0 6px 22px rgba(255, 87, 34, 0.42);
+  color: #ffffff;
 }
 
-.pill-btn-neon .btn-icon {
-  background: rgba(14, 19, 9, 0.15);
-  color: var(--text-dark);
+.pill-btn-neon .btn-icon, .pill-btn-orange .btn-icon {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+/* Contrast Deep Slate Navy Pill Button (from Calfo CTA) */
+.pill-btn-navy, .pill-btn-dark {
+  background: var(--accent-navy);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.pill-btn-navy:hover, .pill-btn-dark:hover {
+  background: var(--accent-navy-hover);
+}
+
+.pill-btn-navy .btn-icon, .pill-btn-dark .btn-icon {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
 
 /* Pure White Pill Button */
 .pill-btn-white {
-  background: var(--accent-white);
-  color: var(--text-dark);
+  background: #ffffff;
+  color: var(--accent-navy);
+  border: 1px solid var(--border-card);
   box-shadow: var(--shadow-sm);
 }
 
 .pill-btn-white:hover {
-  background: #f0f3ed;
-  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.2);
+  background: var(--bg-card-hover);
+  border-color: var(--border-card-hover);
 }
 
 .pill-btn-white .btn-icon {
-  background: rgba(14, 19, 9, 0.12);
-  color: var(--text-dark);
+  background: var(--bg-elevated);
+  color: var(--accent-navy);
 }
 
-/* Dark Glass Ghost Button */
+/* Soft Warm Cream Ghost Button */
 .pill-btn-ghost {
   background: var(--bg-elevated);
   color: var(--text-primary);
@@ -267,13 +287,13 @@ button {
 
 /* Danger Pill */
 .pill-btn-danger {
-  background: rgba(255, 87, 87, 0.12);
+  background: rgba(239, 68, 68, 0.1);
   color: var(--color-overdue);
-  border: 1px solid rgba(255, 87, 87, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.22);
 }
 
 .pill-btn-danger:hover {
-  background: rgba(255, 87, 87, 0.2);
+  background: rgba(239, 68, 68, 0.18);
   border-color: var(--color-overdue);
 }
 
@@ -311,25 +331,21 @@ button {
 }
 
 .button-primary {
-  background: var(--accent-lime);
-  color: var(--text-dark);
-  border-color: var(--accent-lime);
-  box-shadow: 0 4px 14px var(--accent-lime-glow);
+  background: var(--accent-orange);
+  color: #ffffff;
+  border-color: var(--accent-orange);
+  box-shadow: 0 4px 14px var(--accent-orange-glow);
 }
 
 .button-primary:hover {
-  background: var(--accent-lime-hover);
-  color: var(--text-dark);
+  background: var(--accent-orange-hover);
+  color: #ffffff;
 }
 
 .button-danger {
-  background: rgba(255, 87, 87, 0.12);
+  background: rgba(239, 68, 68, 0.1);
   color: var(--color-overdue);
-  border-color: rgba(255, 87, 87, 0.25);
-}
-
-.button-danger:hover {
-  background: rgba(255, 87, 87, 0.22);
+  border-color: rgba(239, 68, 68, 0.22);
 }
 
 .button-sm {
@@ -401,14 +417,14 @@ button {
 }
 
 .nav-item.active {
-  color: var(--text-dark);
-  background: var(--accent-lime);
+  color: #ffffff;
+  background: var(--accent-orange);
   font-weight: 750;
-  box-shadow: 0 4px 16px var(--accent-lime-glow);
+  box-shadow: 0 4px 14px var(--accent-orange-glow);
 }
 
 .nav-item.active .nav-icon {
-  color: var(--text-dark);
+  color: #ffffff;
 }
 
 .sidebar-footer {
@@ -420,6 +436,7 @@ button {
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   padding: 14px;
+  box-shadow: var(--shadow-sm);
 }
 
 .storage-badge {
@@ -427,8 +444,8 @@ button {
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.06em;
-  color: var(--accent-lime);
-  background: var(--accent-lime-dim);
+  color: var(--accent-orange);
+  background: var(--accent-orange-dim);
   padding: 3px 8px;
   border-radius: var(--radius-full);
 }
@@ -489,7 +506,7 @@ h2 {
 }
 
 /* ==========================================================================
-   CARDS & GRIDS (Fintech Dark Theme)
+   CARDS & GRIDS
    ========================================================================== */
 .card {
   background: var(--bg-card);
@@ -498,11 +515,12 @@ h2 {
   box-shadow: var(--shadow-card);
   overflow: hidden;
   position: relative;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
   border-color: var(--border-card-hover);
+  box-shadow: 0 10px 28px rgba(35, 45, 63, 0.08);
 }
 
 .grid-2 {
@@ -512,16 +530,17 @@ h2 {
 }
 
 /* ==========================================================================
-   HERO BALANCE CARD (From Reference Mockup)
+   HERO BALANCE CARD (Warm Sunset Gradient from Calfo)
    ========================================================================== */
 .hero-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
+  background: var(--accent-orange-gradient);
+  color: #ffffff;
   border-radius: var(--radius-xl);
-  padding: clamp(20px, 3vw, 28px);
+  padding: clamp(22px, 3.2vw, 30px);
   margin-bottom: 24px;
   position: relative;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 12px 36px var(--accent-orange-glow);
+  overflow: hidden;
 }
 
 .hero-top {
@@ -541,13 +560,14 @@ h2 {
 .hero-badge-icon {
   width: 48px;
   height: 48px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-card);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
   border-radius: 50%;
   display: grid;
   place-items: center;
   font-size: 22px;
-  box-shadow: var(--shadow-sm);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
 
@@ -559,16 +579,16 @@ h2 {
 .hero-balance-label {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.88);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .hero-balance-amount {
-  font-size: clamp(28px, 4.2vw, 42px);
+  font-size: clamp(28px, 4.2vw, 44px);
   font-weight: 800;
   letter-spacing: -0.05em;
-  color: var(--text-primary);
+  color: #ffffff;
   line-height: 1.1;
   margin-top: 4px;
 }
@@ -577,34 +597,35 @@ h2 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--accent-lime-dim);
-  border: 1px solid rgba(200, 245, 60, 0.25);
-  color: var(--accent-lime);
-  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  padding: 6px 13px;
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 750;
   letter-spacing: -0.01em;
+  backdrop-filter: blur(8px);
 }
 
 .hero-pill-dot {
   width: 6px;
   height: 6px;
-  background: var(--accent-lime);
+  background: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--accent-lime);
+  box-shadow: 0 0 8px #ffffff;
 }
 
-/* Timeframe Selector Pills (24H, 7D, 1M, 3M, 1Y, ALL) */
+/* Timeframe Selector Pills inside Hero */
 .timeframe-pills {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg-canvas);
-  border: 1px solid var(--border-card);
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   padding: 4px;
   border-radius: var(--radius-full);
-  margin: 16px 0 10px;
+  margin: 18px 0 10px;
   width: fit-content;
 }
 
@@ -613,7 +634,7 @@ h2 {
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   transition: all 0.16s ease;
   border: none;
@@ -621,17 +642,18 @@ h2 {
 }
 
 .timeframe-pill:hover {
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .timeframe-pill.active {
-  background: var(--accent-lime);
-  color: var(--text-dark);
+  background: #ffffff;
+  color: var(--accent-orange);
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* ==========================================================================
-   INTERACTIVE CHARTS & SVG VISUALIZATIONS
+   CHARTS & SVG VISUALIZATIONS
    ========================================================================== */
 .chart-container {
   width: 100%;
@@ -648,55 +670,42 @@ h2 {
 
 .chart-line {
   fill: none;
-  stroke: var(--accent-lime);
+  stroke: #ffffff;
   stroke-width: 3.5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 10px rgba(200, 245, 60, 0.45));
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
 }
 
 .chart-area {
-  fill: url(#limeAreaGradient);
+  fill: url(#whiteAreaGradient);
 }
 
 .chart-grid-line {
-  stroke: var(--border-card);
+  stroke: rgba(255, 255, 255, 0.22);
   stroke-width: 1;
   stroke-dasharray: 4 4;
 }
 
 .chart-axis-text {
-  fill: var(--text-muted);
+  fill: rgba(255, 255, 255, 0.8);
   font-size: 11px;
   font-weight: 600;
   font-family: inherit;
 }
 
-/* Interactive hover dot & tooltip */
-.chart-point {
-  fill: var(--accent-lime);
-  stroke: var(--bg-canvas);
-  stroke-width: 3;
-  cursor: pointer;
-  transition: transform 0.2s ease, r 0.2s ease;
-}
-
-.chart-point:hover {
-  r: 7;
-  filter: drop-shadow(0 0 10px var(--accent-lime));
-}
-
+/* Tooltip badge */
 .chart-tooltip-badge {
   position: absolute;
-  background: var(--bg-elevated);
-  border: 1px solid var(--accent-lime);
-  color: var(--text-primary);
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  color: var(--accent-orange);
   padding: 6px 12px;
   border-radius: var(--radius-md);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 800;
   pointer-events: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
   transform: translate(-50%, -120%);
   display: flex;
   align-items: center;
@@ -705,99 +714,19 @@ h2 {
   z-index: 10;
 }
 
-/* Bar Chart (Dual-Tone Rounded Pills from Reference) */
-.bar-chart-card {
-  padding: 22px;
+.chart-point {
+  fill: #ffffff;
+  stroke: var(--accent-orange);
+  stroke-width: 3;
+  cursor: pointer;
+  transition: transform 0.2s ease, r 0.2s ease;
 }
 
-.bar-chart-wrap {
-  height: 190px;
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 24px 8px 12px;
-  position: relative;
+.chart-point:hover {
+  r: 7;
 }
 
-.bar-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  justify-content: flex-end;
-  position: relative;
-}
-
-.bar-pair {
-  width: 100%;
-  max-width: 36px;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 4px;
-}
-
-.bar-pill {
-  width: 12px;
-  border-radius: var(--radius-full);
-  min-height: 4px;
-  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
-}
-
-.bar-pill:hover {
-  transform: scaleY(1.05);
-}
-
-.bar-pill.income {
-  background: var(--accent-lime);
-  box-shadow: 0 0 10px rgba(200, 245, 60, 0.25);
-}
-
-.bar-pill.expense {
-  background: var(--accent-white);
-  opacity: 0.85;
-}
-
-.bar-day-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-top: 10px;
-}
-
-.chart-legend {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-subtle);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.legend-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 6px;
-}
-
-.legend-dot.lime {
-  background: var(--accent-lime);
-  box-shadow: 0 0 8px var(--accent-lime);
-}
-
-.legend-dot.white {
-  background: var(--accent-white);
-}
-
-/* ==========================================================================
-   HERO ACTIONS (Side-by-side Large Pill Buttons)
-   ========================================================================== */
+/* Hero Action Buttons */
 .hero-actions {
   display: flex;
   align-items: center;
@@ -811,6 +740,30 @@ h2 {
   min-width: 140px;
   padding: 13px 22px;
   font-size: 14px;
+}
+
+/* Navy Button on Hero */
+.hero-actions .pill-btn-navy {
+  background: var(--accent-navy);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.hero-actions .pill-btn-white {
+  background: #ffffff;
+  color: var(--accent-orange);
+  border: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.hero-actions .pill-btn-ghost {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.hero-actions .pill-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* ==========================================================================
@@ -876,25 +829,25 @@ h2 {
 }
 
 /* ==========================================================================
-   FEATURED / ASSET HIGHLIGHT CARD (Neon Lime from Screen 3)
+   FEATURED HIGHLIGHT CARD (Sunset Orange Card from Calfo)
    ========================================================================== */
-.featured-card-lime {
-  background: var(--accent-lime);
-  color: var(--text-dark);
+.featured-card-lime, .featured-card-orange {
+  background: var(--accent-orange-gradient);
+  color: #ffffff;
   border-radius: var(--radius-xl);
-  padding: 20px 22px;
+  padding: 20px 24px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  box-shadow: 0 10px 30px rgba(200, 245, 60, 0.25);
+  box-shadow: 0 8px 26px var(--accent-orange-glow);
   position: relative;
   overflow: hidden;
 }
 
-.featured-card-lime * {
-  color: var(--text-dark);
+.featured-card-lime *, .featured-card-orange * {
+  color: #ffffff;
 }
 
 .featured-card-left {
@@ -907,12 +860,13 @@ h2 {
 .featured-avatar {
   width: 44px;
   height: 44px;
-  background: rgba(14, 19, 9, 0.15);
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 50%;
   display: grid;
   place-items: center;
   font-size: 20px;
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .featured-title {
@@ -924,7 +878,7 @@ h2 {
 .featured-sub {
   font-size: 12px;
   font-weight: 600;
-  opacity: 0.8;
+  opacity: 0.88;
 }
 
 .featured-card-right {
@@ -941,9 +895,10 @@ h2 {
 .featured-badge {
   font-size: 11px;
   font-weight: 750;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
-  background: rgba(14, 19, 9, 0.12);
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .featured-sparkline-bg {
@@ -952,8 +907,100 @@ h2 {
   bottom: 0;
   width: 55%;
   height: 100%;
-  opacity: 0.22;
+  opacity: 0.16;
   pointer-events: none;
+}
+
+/* ==========================================================================
+   BAR CHART (Dual-Tone Rounded Pills from Reference)
+   ========================================================================== */
+.bar-chart-card {
+  padding: 22px;
+}
+
+.bar-chart-wrap {
+  height: 190px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 24px 8px 12px;
+  position: relative;
+}
+
+.bar-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.bar-pair {
+  width: 100%;
+  max-width: 36px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+}
+
+.bar-pill {
+  width: 12px;
+  border-radius: var(--radius-full);
+  min-height: 4px;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
+}
+
+.bar-pill:hover {
+  transform: scaleY(1.05);
+}
+
+.bar-pill.income {
+  background: var(--accent-orange);
+  box-shadow: 0 2px 8px var(--accent-orange-glow);
+}
+
+.bar-pill.expense {
+  background: var(--accent-navy);
+  opacity: 0.85;
+}
+
+.bar-day-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.legend-dot.lime, .legend-dot.orange {
+  background: var(--accent-orange);
+  box-shadow: 0 0 6px var(--accent-orange-glow);
+}
+
+.legend-dot.white, .legend-dot.navy {
+  background: var(--accent-navy);
 }
 
 /* ==========================================================================
@@ -972,7 +1019,7 @@ h2 {
 }
 
 .panel-head a {
-  color: var(--accent-lime);
+  color: var(--accent-orange);
   font-weight: 700;
   font-size: 13px;
   text-decoration: none;
@@ -1024,7 +1071,7 @@ h2 {
 }
 
 .money.positive {
-  color: var(--accent-lime);
+  color: var(--accent-orange);
 }
 
 .money.negative {
@@ -1056,27 +1103,27 @@ h2 {
 }
 
 .status-paid {
-  color: var(--accent-lime);
-  background: var(--accent-lime-dim);
-  border: 1px solid rgba(200, 245, 60, 0.25);
+  color: var(--color-positive);
+  background: var(--color-positive-bg);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .status-due {
   color: var(--color-due);
   background: var(--color-due-bg);
-  border: 1px solid rgba(243, 190, 67, 0.25);
+  border: 1px solid rgba(255, 122, 56, 0.25);
 }
 
 .status-overdue {
   color: var(--color-overdue);
   background: var(--color-overdue-bg);
-  border: 1px solid rgba(255, 87, 87, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
 .status-draft {
   color: var(--color-draft);
   background: var(--color-draft-bg);
-  border: 1px solid rgba(140, 155, 132, 0.25);
+  border: 1px solid rgba(100, 116, 139, 0.25);
 }
 
 /* ==========================================================================
@@ -1111,8 +1158,8 @@ h2 {
 }
 
 .search:focus {
-  border-color: var(--accent-lime);
-  box-shadow: 0 0 0 2px var(--accent-lime-dim);
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 2px var(--accent-orange-dim);
 }
 
 .table-wrap {
@@ -1157,12 +1204,12 @@ tr.clickable:hover {
 }
 
 /* ==========================================================================
-   MODAL & FORMS (Dark Glass Aesthetic)
+   MODAL & FORMS (Calfo Light Glass Aesthetic)
    ========================================================================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(10, 14, 8, 0.75);
+  background: rgba(25, 33, 45, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 50;
@@ -1183,7 +1230,7 @@ tr.clickable:hover {
   border-radius: var(--radius-xl);
   width: min(600px, 100%);
   margin: auto;
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 25px 70px rgba(35, 45, 63, 0.18);
   overflow: hidden;
   animation: modalEnter 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1191,9 +1238,8 @@ tr.clickable:hover {
 @keyframes modalEnter {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(10px);
+    transform: scale(0.96) translateY(10px);
   }
-
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -1217,9 +1263,9 @@ tr.clickable:hover {
 .modal-dot {
   width: 8px;
   height: 8px;
-  background: var(--accent-lime);
+  background: var(--accent-orange);
   border-radius: 50%;
-  box-shadow: 0 0 10px var(--accent-lime);
+  box-shadow: 0 0 10px var(--accent-orange);
 }
 
 .modal-header h2 {
@@ -1277,25 +1323,22 @@ label {
   letter-spacing: 0.04em;
 }
 
-input,
-select,
-textarea {
+input, select, textarea {
   min-height: 42px;
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   padding: 10px 14px;
   color: var(--text-primary);
-  background: var(--bg-canvas);
+  background: #faf9f6;
   outline: none;
   font-size: 13.5px;
   transition: all 0.18s ease;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--accent-lime);
-  box-shadow: 0 0 0 2px var(--accent-lime-dim);
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 2px var(--accent-orange-dim);
+  background: #ffffff;
 }
 
 textarea {
@@ -1327,9 +1370,9 @@ textarea {
 }
 
 .notice {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-card);
-  color: var(--text-secondary);
+  background: #fff6f0;
+  border: 1px solid #ffd4bd;
+  color: #c2410c;
   padding: 12px 14px;
   border-radius: var(--radius-md);
   font-size: 13px;
@@ -1387,14 +1430,13 @@ textarea {
   transform: translate(-50%, 100px);
   opacity: 0;
   transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
-  background: var(--bg-elevated);
-  border: 1px solid var(--accent-lime);
-  color: var(--text-primary);
-  padding: 11px 18px;
+  background: var(--accent-navy);
+  color: #ffffff;
+  padding: 11px 20px;
   border-radius: var(--radius-full);
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 16px var(--accent-lime-glow);
+  box-shadow: 0 10px 30px rgba(35, 45, 63, 0.25);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1407,7 +1449,7 @@ textarea {
 }
 
 /* ==========================================================================
-   MOBILE FLOATING CAPSULE NAVIGATION (From Reference Mockups)
+   MOBILE FLOATING CAPSULE NAVIGATION (From Calfo Reference)
    ========================================================================== */
 .mobile-nav-container {
   display: none;
@@ -1426,13 +1468,14 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: 6px 10px;
   border-radius: var(--radius-full);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 36px rgba(35, 45, 63, 0.12), 0 2px 8px rgba(35, 45, 63, 0.05);
   width: min(340px, calc(100vw - 32px));
+  border: 1px solid var(--border-card);
 }
 
 .mobile-tab {
@@ -1441,7 +1484,7 @@ textarea {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  color: #71717a;
+  color: #94a3b8;
   text-decoration: none;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1456,13 +1499,13 @@ textarea {
 }
 
 .mobile-tab:hover {
-  color: #18181b;
+  color: var(--text-primary);
 }
 
 .mobile-tab.active .tab-indicator {
-  background: #0e1309;
+  background: var(--accent-orange);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 14px var(--accent-orange-glow);
 }
 
 /* ==========================================================================
@@ -1472,77 +1515,77 @@ textarea {
   .app-shell {
     grid-template-columns: 1fr;
   }
-
+  
   .sidebar {
     display: none;
   }
-
+  
   .content {
     padding: 20px 16px 110px;
   }
-
+  
   .mobile-nav-container {
     display: flex;
   }
-
+  
   .metrics {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-
+  
   .metric-card {
     min-height: 118px;
     padding: 16px;
   }
-
+  
   .grid-2 {
     grid-template-columns: 1fr;
   }
-
+  
   .topbar {
     height: 64px;
     padding: 0 16px;
   }
-
+  
   .brand-name {
     font-size: 15px;
   }
-
+  
   .brand-tagline {
     display: none;
   }
-
+  
   .brand-avatar {
     width: 36px;
     height: 36px;
   }
-
+  
   .top-actions .btn-demo {
     display: none;
   }
-
+  
   .top-actions .pill-btn-white .btn-text {
     display: none;
   }
-
+  
   .top-actions .pill-btn-white {
     padding: 8px;
     width: 36px;
     height: 36px;
   }
-
+  
   .top-actions .pill-btn-neon {
     padding: 8px 14px;
   }
-
+  
   .table-wrap {
     overflow-x: auto;
   }
-
+  
   table {
     min-width: 580px;
   }
-
+  
   .modal {
     margin: 10px;
   }
@@ -1552,48 +1595,48 @@ textarea {
   .metrics {
     grid-template-columns: 1fr 1fr;
   }
-
+  
   .hero-card {
-    padding: 18px 16px;
+    padding: 20px 16px;
     border-radius: var(--radius-lg);
   }
-
+  
   .hero-balance-amount {
     font-size: 32px;
   }
-
+  
   .hero-actions .pill-btn {
     width: 100%;
     min-width: 0;
   }
-
+  
   .form-grid {
     grid-template-columns: 1fr;
   }
-
+  
   .field.full {
     grid-column: auto;
   }
-
+  
   .form {
     padding: 18px 16px;
   }
-
+  
   .form-actions {
     flex-direction: column;
     align-items: stretch;
   }
-
+  
   .form-actions-right {
     width: 100%;
     margin-left: 0;
   }
-
+  
   .form-actions-right .pill-btn,
   .form-actions-right .button {
     flex: 1;
   }
-
+  
   .settings-row {
     flex-direction: column;
     align-items: flex-start;
@@ -1602,22 +1645,12 @@ textarea {
 }
 
 @media print {
-
-  .topbar,
-  .sidebar,
-  .mobile-nav-container,
-  .toolbar,
-  .pill-btn,
-  .button,
-  .modal-backdrop,
-  .toast {
+  .topbar, .sidebar, .mobile-nav-container, .toolbar, .pill-btn, .button, .modal-backdrop, .toast {
     display: none !important;
   }
-
   .content {
     padding: 0;
   }
-
   body {
     background: white;
     color: black;

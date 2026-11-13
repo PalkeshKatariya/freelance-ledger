@@ -154,7 +154,7 @@ function sparklineSvg(points = [12, 18, 15, 28, 24, 38, 34, 48], isPositive = tr
     const y = (height - 4 - ((p - min) / range) * (height - 8)).toFixed(1);
     return `${x},${y}`;
   });
-  const strokeColor = isPositive ? "#c8f53c" : "#ff5757";
+  const strokeColor = isPositive ? "#ff5722" : "#8c9ba8";
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
     <polyline points="${coords.join(" ")}" fill="none" stroke="${strokeColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
@@ -163,10 +163,10 @@ function sparklineSvg(points = [12, 18, 15, 28, 24, 38, 34, 48], isPositive = tr
 function generateTrendChart(timeframe = "1M") {
   const configs = {
     "24H": { points: [42, 45, 43, 49, 54, 52, 60, 58, 64, 68], labels: ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"], growth: "+2.4%" },
-    "7D": { points: [50, 58, 54, 65, 72, 68, 80, 85], labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], growth: "+6.8%" },
-    "1M": { points: [60, 58, 68, 74, 70, 82, 88, 95], labels: ["Week 1", "Week 2", "Week 3", "Week 4"], growth: "+14.2%" },
-    "3M": { points: [45, 55, 50, 68, 75, 84, 92, 105], labels: ["Sep", "Oct", "Nov"], growth: "+22.5%" },
-    "1Y": { points: [30, 42, 48, 55, 62, 70, 85, 98, 110, 125], labels: ["Q1", "Q2", "Q3", "Q4"], growth: "+48.0%" },
+    "7D":  { points: [50, 58, 54, 65, 72, 68, 80, 85], labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], growth: "+6.8%" },
+    "1M":  { points: [60, 58, 68, 74, 70, 82, 88, 95], labels: ["Week 1", "Week 2", "Week 3", "Week 4"], growth: "+14.2%" },
+    "3M":  { points: [45, 55, 50, 68, 75, 84, 92, 105], labels: ["Sep", "Oct", "Nov"], growth: "+22.5%" },
+    "1Y":  { points: [30, 42, 48, 55, 62, 70, 85, 98, 110, 125], labels: ["Q1", "Q2", "Q3", "Q4"], growth: "+48.0%" },
     "ALL": { points: [20, 35, 48, 65, 78, 92, 115, 138], labels: ["2024", "2025", "2026"], growth: "+72.3%" }
   };
   const config = configs[timeframe] || configs["1M"];
@@ -202,13 +202,13 @@ function generateTrendChart(timeframe = "1M") {
   return `
     <div class="chart-container">
       <div class="chart-tooltip-badge" style="left: ${((lastPoint.x / width) * 100).toFixed(1)}%; top: ${(lastPoint.y - 12).toFixed(1)}px;">
-        <span style="color:var(--accent-lime)">●</span> High: ${currency(max * 1000)}
+        <span style="color:var(--accent-orange)">●</span> High: ${currency(max * 1000)}
       </div>
       <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
         <defs>
-          <linearGradient id="limeAreaGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#c8f53c" stop-opacity="0.32" />
-            <stop offset="100%" stop-color="#c8f53c" stop-opacity="0.0" />
+          <linearGradient id="whiteAreaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.32" />
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0" />
           </linearGradient>
         </defs>
         <!-- Horizontal grid guidelines -->
@@ -219,12 +219,12 @@ function generateTrendChart(timeframe = "1M") {
         <!-- Smooth line path -->
         <path d="${pathD}" class="chart-line" />
         <!-- Vertical dashed guide for latest point -->
-        <line x1="${lastPoint.x}" y1="${lastPoint.y}" x2="${lastPoint.x}" y2="${height - 25}" stroke="#c8f53c" stroke-dasharray="3 3" opacity="0.6" />
-        <!-- Active glowing data point -->
+        <line x1="${lastPoint.x}" y1="${lastPoint.y}" x2="${lastPoint.x}" y2="${height - 25}" stroke="rgba(255,255,255,0.7)" stroke-dasharray="3 3" />
+        <!-- Active data point -->
         <circle cx="${lastPoint.x}" cy="${lastPoint.y}" r="5.5" class="chart-point" />
       </svg>
       <!-- X-axis labels -->
-      <div style="display:flex; justify-content:space-between; padding-top:6px; color:var(--text-muted); font-size:11px; font-weight:700;">
+      <div style="display:flex; justify-content:space-between; padding-top:6px; color:rgba(255,255,255,0.85); font-size:11px; font-weight:700;">
         ${config.labels.map(l => `<span>${l}</span>`).join("")}
       </div>
     </div>
@@ -311,9 +311,9 @@ function dashboard() {
       <!-- Interactive SVG Bézier Curve Graph -->
       ${generateTrendChart(selectedTimeframe)}
 
-      <!-- Hero Action Buttons (Neon Lime + Pure White Pills) -->
+      <!-- Hero Action Buttons (Calfo Navy + White Pills) -->
       <div class="hero-actions">
-        <button class="pill-btn pill-btn-neon" data-action="new-invoice">
+        <button class="pill-btn pill-btn-navy" data-action="new-invoice">
           <span class="btn-icon">+</span>
           <span>New Invoice</span>
         </button>
@@ -375,8 +375,8 @@ function dashboard() {
       </article>
     </section>
 
-    <!-- Featured Client / Top Asset Highlight Card (Neon Lime from Screen 3) -->
-    <section class="featured-card-lime">
+    <!-- Featured Client / Top Retainer Card (Sunset Orange from Calfo) -->
+    <section class="featured-card-orange">
       <div class="featured-card-left">
         <div class="featured-avatar">⚡</div>
         <div>
@@ -389,7 +389,7 @@ function dashboard() {
         <span class="featured-badge">+18.5% YTD</span>
       </div>
       <svg class="featured-sparkline-bg" viewBox="0 0 200 60" preserveAspectRatio="none">
-        <path d="M0 45 C 50 15, 100 50, 150 20 L 200 10 L 200 60 L 0 60 Z" fill="#0e1309" />
+        <path d="M0 45 C 50 15, 100 50, 150 20 L 200 10 L 200 60 L 0 60 Z" fill="#ffffff" />
       </svg>
     </section>
 
@@ -402,7 +402,7 @@ function dashboard() {
             <h2>Weekly Cashflow Flow</h2>
             <p class="subtitle">Inflow vs Outflow comparison</p>
           </div>
-          <span class="hero-pill-badge">Live</span>
+          <span class="hero-pill-badge" style="background:var(--accent-orange-dim); color:var(--accent-orange); border-color:rgba(255,87,34,0.2);">Live</span>
         </div>
 
         <div class="bar-chart-wrap">
@@ -418,8 +418,8 @@ function dashboard() {
         </div>
 
         <div class="chart-legend">
-          <span><i class="legend-dot lime"></i>Income Received</span>
-          <span><i class="legend-dot white"></i>Expenses</span>
+          <span><i class="legend-dot orange"></i>Income Received</span>
+          <span><i class="legend-dot navy"></i>Expenses</span>
         </div>
       </article>
 
@@ -433,7 +433,7 @@ function dashboard() {
           ${due.length ? due.map(i => `
             <div class="list-row clickable" data-action="invoice-detail" data-id="${i.id}">
               <div style="display:flex; align-items:center; gap:12px;">
-                <div class="hero-badge-icon" style="width:36px; height:36px; font-size:16px;">📄</div>
+                <div class="hero-badge-icon" style="width:36px; height:36px; font-size:16px; background:#fff1eb; color:#ff5722; border:1px solid #ffd8c4;">📄</div>
                 <div>
                   <div class="primary-text">${escape(i.number)}</div>
                   <div class="secondary-text">${escape(clientName(i.clientId))} &middot; Due ${dateText(i.dueDate)}</div>
@@ -525,7 +525,7 @@ function payments() {
     `)}
 
     <div class="toolbar">
-      <div class="help">Lifetime revenue received: <strong style="color:var(--accent-lime);">${currency(totalReceived)}</strong></div>
+      <div class="help">Lifetime revenue received: <strong style="color:var(--accent-orange);">${currency(totalReceived)}</strong></div>
       <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="export-report">Export Log</button>
     </div>
 
@@ -743,7 +743,7 @@ function reports() {
     <section class="metrics">
       <article class="metric-card">
         <div class="metric-label">6-Mo Inflow</div>
-        <div class="metric-value" style="color:var(--accent-lime);">${currency(received)}</div>
+        <div class="metric-value" style="color:var(--accent-orange);">${currency(received)}</div>
         <div class="metric-note">Total payments received</div>
       </article>
       <article class="metric-card">
@@ -782,8 +782,8 @@ function reports() {
           `).join("")}
         </div>
         <div class="chart-legend">
-          <span><i class="legend-dot lime"></i>Received</span>
-          <span><i class="legend-dot white"></i>Expenses</span>
+          <span><i class="legend-dot orange"></i>Received</span>
+          <span><i class="legend-dot navy"></i>Expenses</span>
         </div>
       </article>
 
@@ -1209,11 +1209,11 @@ function invoiceDetail(id) {
         ${Number(i.gstRate) ? `<div><span>GST (${i.gstRate}%)</span><span>${currency(Number(i.amount) * Number(i.gstRate) / 100)}</span></div>` : ""}
         <div style="border-top:1px solid var(--border-card); margin-top:8px; padding-top:8px;">
           <strong style="color:var(--text-primary);">Total Invoiced</strong>
-          <strong style="color:var(--accent-lime);">${currency(invoiceAmount(i))}</strong>
+          <strong style="color:var(--accent-orange);">${currency(invoiceAmount(i))}</strong>
         </div>
         <div>
           <span>Balance Outstanding</span>
-          <strong style="${balance(i) > 0 ? "color:var(--color-due);" : "color:var(--accent-lime);"}">${currency(balance(i))}</strong>
+          <strong style="${balance(i) > 0 ? "color:var(--color-due);" : "color:var(--accent-orange);"}">${currency(balance(i))}</strong>
         </div>
       </div>
       
@@ -1228,7 +1228,7 @@ function invoiceDetail(id) {
         ${payments.length ? payments.map(p => `
           <div class="list-row">
             <div>
-              <div class="primary-text" style="color:var(--accent-lime);">${currency(p.amount)}</div>
+              <div class="primary-text" style="color:var(--accent-orange);">${currency(p.amount)}</div>
               <div class="secondary-text">${dateText(p.date)} &middot; ${escape(p.mode)} ${p.reference ? `&middot; ${escape(p.reference)}` : ""}</div>
             </div>
             <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="delete-payment" data-id="${p.id}">Remove</button>
