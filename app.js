@@ -29,15 +29,15 @@ let searchText = "";
 let selectedTimeframe = "1M";
 let toastTimer;
 
-let supabase = null;
+let sbClient = null;
 let currentUser = null;
 let isSyncing = false;
 
 function getSupabase() {
-  if (!supabase && window.supabase && window.supabase.createClient) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  if (!sbClient && window.supabase && window.supabase.createClient) {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   }
-  return supabase;
+  return sbClient;
 }
 
 function load() {
