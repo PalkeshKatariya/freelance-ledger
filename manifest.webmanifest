@@ -1,10 +1,10 @@
 {
-  "name": "Freelance Ledger",
+  "name": "Total Berries Ledger",
   "short_name": "Ledger",
-  "description": "A private accounting tracker for freelancers.",
+  "description": "Modern dark accounting & freelance ledger with real-time financial graphs.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f5f8f6",
-  "theme_color": "#0b5c54",
+  "background_color": "#0e1309",
+  "theme_color": "#0e1309",
   "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
 }
