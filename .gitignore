@@ -4,6 +4,11 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Secrets
+pass.txt
+*.key
+.env*
+
 # Dependencies & Build
 node_modules/
 .vercel/

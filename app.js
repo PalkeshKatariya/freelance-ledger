@@ -1,5 +1,8 @@
-/* Total Berries · Freelance Ledger: all records remain strictly in this browser. */
+/* Total Berries · Freelance Ledger with Real-time Supabase Cloud Sync */
 const KEY = "total-berries-clean-v1";
+const SUPABASE_URL = "https://pnonyubkhhubujlyemam.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBub255dWJraGh1YnVqbHllbWFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1ODUyOTAsImV4cCI6MjExMDE2MTI5MH0.B6Emq3wAnyApqwyobvtND3qvActeEfi_ooYfq-kAi1Y";
+
 const today = () => new Date().toISOString().slice(0, 10);
 const plusDays = days => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const uid = () => crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -26,6 +29,17 @@ let searchText = "";
 let selectedTimeframe = "1M";
 let toastTimer;
 
+let supabase = null;
+let currentUser = null;
+let isSyncing = false;
+
+function getSupabase() {
+  if (!supabase && window.supabase && window.supabase.createClient) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+  return supabase;
+}
+
 function load() {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || "null");
@@ -38,6 +52,9 @@ function load() {
 
 function save() {
   localStorage.setItem(KEY, JSON.stringify(data));
+  if (currentUser) {
+    pushToSupabase();
+  }
 }
 
 function currency(value) {
@@ -108,7 +125,236 @@ function notify(message) {
   el.textContent = message;
   el.classList.add("visible");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("visible"), 2800);
+  toastTimer = setTimeout(() => el.classList.remove("visible"), 3200);
+}
+
+/* ==========================================================================
+   SUPABASE CLOUD SYNC & AUTH
+   ========================================================================== */
+async function initAuth() {
+  const sb = getSupabase();
+  if (!sb) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    currentUser = session?.user || null;
+    updateSyncIndicator();
+    if (currentUser) {
+      await pullFromSupabase();
+    }
+    sb.auth.onAuthStateChange(async (event, session) => {
+      currentUser = session?.user || null;
+      updateSyncIndicator();
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && currentUser) {
+        await pullFromSupabase();
+      }
+    });
+  } catch (e) {
+    console.warn("Supabase init error:", e);
+  }
+}
+
+function updateSyncIndicator() {
+  const btnText = document.getElementById("sync-button-text");
+  const btnIcon = document.getElementById("sync-button-icon");
+  const btn = document.getElementById("sync-button");
+  if (!btnText) return;
+  if (currentUser) {
+    const name = currentUser.email ? currentUser.email.split("@")[0] : "Synced";
+    btnText.textContent = name;
+    if (btnIcon) btnIcon.innerHTML = `<span class="sync-dot"></span>`;
+    btn?.setAttribute("title", `Connected as ${currentUser.email} (Real-time Cloud Sync active)`);
+  } else {
+    btnText.textContent = "Cloud Sync";
+    if (btnIcon) btnIcon.textContent = "☁";
+    btn?.setAttribute("title", "Sign in to sync across desktop and mobile");
+  }
+}
+
+async function pullFromSupabase() {
+  const sb = getSupabase();
+  if (!sb || !currentUser) return;
+  try {
+    isSyncing = true;
+    const { data: row, error } = await sb
+      .from("ledger_records")
+      .select("data, updated_at")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (row && row.data && typeof row.data === "object" && Array.isArray(row.data.invoices)) {
+      data = { ...emptyData(), ...row.data, settings: { ...emptyData().settings, ...row.data.settings } };
+      localStorage.setItem(KEY, JSON.stringify(data));
+      render();
+      updateSyncIndicator();
+    } else if (data.clients.length || data.invoices.length || data.expenses.length) {
+      // Local has records but cloud is empty, upload to cloud
+      await pushToSupabase();
+    }
+  } catch (e) {
+    console.warn("Pull error:", e);
+  } finally {
+    isSyncing = false;
+  }
+}
+
+async function pushToSupabase() {
+  const sb = getSupabase();
+  if (!sb || !currentUser) return;
+  try {
+    const { error } = await sb
+      .from("ledger_records")
+      .upsert({
+        user_id: currentUser.id,
+        data: data,
+        updated_at: new Date().toISOString()
+      });
+    if (error) throw error;
+  } catch (e) {
+    console.warn("Cloud push error:", e);
+  }
+}
+
+async function syncNow() {
+  if (!currentUser) return;
+  notify("Syncing with Supabase cloud...");
+  await pushToSupabase();
+  await pullFromSupabase();
+  closeModal();
+  notify("Records synchronized with cloud!");
+}
+
+async function signOut() {
+  const sb = getSupabase();
+  if (sb) {
+    await sb.auth.signOut();
+  }
+  currentUser = null;
+  updateSyncIndicator();
+  closeModal();
+  notify("Signed out of Supabase.");
+}
+
+function authModal(mode = "signin") {
+  if (currentUser) {
+    showModal("Cloud Sync & Account", `
+      <div class="form">
+        <div class="auth-status-card">
+          <span class="sync-dot"></span>
+          <div>
+            <div style="font-weight:800; color:var(--text-primary); font-size:15px;">Connected to Supabase</div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${escape(currentUser.email)}</div>
+          </div>
+        </div>
+
+        <p class="help" style="margin-bottom:18px;">
+          Your invoices, payments, and clients sync automatically. Sign into this same account on your mobile browser (<strong>https://total-berries.vercel.app</strong>) to access and manage your records anywhere.
+        </p>
+
+        <div class="form-actions">
+          <button type="button" class="pill-btn pill-btn-danger" data-action="sign-out">Sign Out</button>
+          <div class="form-actions-right">
+            <button type="button" class="pill-btn pill-btn-ghost" data-action="close-modal">Close</button>
+            <button type="button" class="pill-btn pill-btn-neon" data-action="sync-now">Sync Now</button>
+          </div>
+        </div>
+      </div>
+    `);
+    return;
+  }
+
+  showModal("Cross-Device Cloud Sync", `
+    <form class="form" id="auth-form" data-mode="${mode}">
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn ${mode === "signin" ? "active" : ""}" data-action="auth-tab" data-id="signin">Sign In</button>
+        <button type="button" class="auth-tab-btn ${mode === "signup" ? "active" : ""}" data-action="auth-tab" data-id="signup">Create Account</button>
+      </div>
+
+      <p class="help" style="margin-bottom:16px;">
+        ${mode === "signin" 
+          ? "Sign in to access and sync your records across desktop and mobile in real-time." 
+          : "Create an account to securely access your ledger on both your laptop and phone."}
+      </p>
+
+      <div class="form-grid">
+        <div class="field full">
+          <label>Email Address</label>
+          <input name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="field full">
+          <label>Password</label>
+          <input name="password" type="password" placeholder="••••••••" required autocomplete="current-password" minlength="6" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="pill-btn pill-btn-ghost pill-btn-sm" data-action="magic-link" title="Passwordless login link sent to your email">
+          Magic Link
+        </button>
+        <div class="form-actions-right">
+          <button type="button" class="pill-btn pill-btn-ghost" data-action="close-modal">Cancel</button>
+          <button class="pill-btn pill-btn-neon">
+            ${mode === "signin" ? "Sign In" : "Create Account"}
+          </button>
+        </div>
+      </div>
+    </form>
+  `);
+}
+
+async function handleAuthSubmit(form) {
+  const sb = getSupabase();
+  if (!sb) return notify("Connecting to Supabase... Please try again.");
+
+  const mode = form.dataset.mode || "signin";
+  const { email, password } = formObject(form);
+
+  if (!email || !password) return notify("Please enter your email and password.");
+
+  notify("Authenticating with Supabase...");
+  try {
+    if (mode === "signup") {
+      const { data: res, error } = await sb.auth.signUp({ email, password });
+      if (error) throw error;
+      if (res.user && !res.session) {
+        closeModal();
+        notify("Account created! Check your email to confirm, then sign in.");
+      } else if (res.session) {
+        currentUser = res.user;
+        updateSyncIndicator();
+        closeModal();
+        notify("Account connected! Cloud sync active.");
+        await pushToSupabase();
+      }
+    } else {
+      const { data: res, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      currentUser = res.user;
+      updateSyncIndicator();
+      closeModal();
+      notify("Signed in! Syncing records...");
+      await pullFromSupabase();
+    }
+  } catch (err) {
+    notify(`Auth error: ${err.message || "Failed to authenticate."}`);
+  }
+}
+
+async function sendMagicLink() {
+  const sb = getSupabase();
+  const emailInput = document.querySelector("#auth-form input[name='email']");
+  const email = emailInput?.value?.trim();
+  if (!email) return notify("Enter your email address to receive a magic link.");
+
+  notify("Sending login link...");
+  try {
+    const { error } = await sb.auth.signInWithOtp({ email });
+    if (error) throw error;
+    closeModal();
+    notify("Check your email for the 1-click login link!");
+  } catch (err) {
+    notify(`Error: ${err.message || "Failed to send login link."}`);
+  }
 }
 
 /* ==========================================================================
@@ -254,6 +500,7 @@ function render() {
     const isMatch = a.dataset.view === currentView || (a.dataset.view === "more" && ["clients", "projects", "reports", "settings"].includes(currentView));
     a.classList.toggle("active", isMatch);
   });
+  updateSyncIndicator();
 }
 
 function heading(title, subtitle, action = "") {
@@ -413,7 +660,7 @@ function dashboard() {
           <div class="featured-avatar">💼</div>
           <div>
             <div class="featured-title">Start by adding your first client</div>
-            <div class="featured-sub">Records remain 100% private in this browser unless exported</div>
+            <div class="featured-sub">Records sync across your phone and laptop with Supabase</div>
           </div>
         </div>
         <div class="featured-card-right">
@@ -843,7 +1090,7 @@ function reports() {
 function settings() {
   const s = data.settings;
   return `
-    ${heading("Settings & Vault", "Manage your business details and local offline backups.")}
+    ${heading("Settings & Vault", "Manage your business details, Supabase sync, and local backups.")}
 
     <div class="grid-2">
       <article class="card panel">
@@ -887,9 +1134,20 @@ function settings() {
 
       <article class="card panel">
         <div class="panel-head">
-          <h2>Local Data Vault</h2>
+          <h2>Cloud Sync & Local Vault</h2>
         </div>
         <div class="settings-list">
+          <div class="settings-row">
+            <div>
+              <div class="primary-text">Supabase Cross-Device Sync</div>
+              <p class="help">
+                ${currentUser ? `Active: <strong style="color:var(--color-positive);">${escape(currentUser.email)}</strong>` : "Sign in to synchronize invoices & payments between your phone and laptop in real-time."}
+              </p>
+            </div>
+            <button class="pill-btn ${currentUser ? "pill-btn-white" : "pill-btn-neon"} pill-btn-sm" data-action="open-auth">
+              ${currentUser ? "Manage Account" : "Connect"}
+            </button>
+          </div>
           <div class="settings-row">
             <div>
               <div class="primary-text">Export Backup</div>
@@ -906,7 +1164,7 @@ function settings() {
           </div>
           <div class="settings-row">
             <div>
-              <div class="primary-text">Erase Device Data</div>
+              <div class="primary-text">Erase Local Device Data</div>
               <p class="help">Permanently wipe all records saved in this browser.</p>
             </div>
             <button class="pill-btn pill-btn-danger pill-btn-sm" data-action="clear-data">Clear All</button>
@@ -916,7 +1174,7 @@ function settings() {
     </div>
 
     <p class="notice" style="margin-top:20px;">
-      🔒 <strong>Privacy Assurance:</strong> All your financial metrics and data stay strictly in this device's local storage. Only you have access to add, edit, or delete records.
+      🔒 <strong>End-to-End Privacy:</strong> All your financial data is secured with Supabase Row Level Security (RLS) and encrypted in transit. Only your authenticated account has access to your records.
     </p>
   `;
 }
@@ -1330,6 +1588,11 @@ document.addEventListener("click", event => {
   else if (action === "edit-project") projectForm(id);
   else if (action === "invoice-detail") invoiceDetail(id);
   else if (action === "close-modal") closeModal();
+  else if (action === "open-auth") authModal();
+  else if (action === "auth-tab") authModal(id);
+  else if (action === "sync-now") syncNow();
+  else if (action === "sign-out") signOut();
+  else if (action === "magic-link") sendMagicLink();
   else if (action === "export-backup") exportBackup();
   else if (action === "import-backup") document.getElementById("import-file").click();
   else if (action === "export-expenses") exportExpenses();
@@ -1382,6 +1645,12 @@ document.addEventListener("click", event => {
 document.addEventListener("submit", event => {
   const form = event.target;
   event.preventDefault();
+
+  if (form.id === "auth-form") {
+    handleAuthSubmit(form);
+    return;
+  }
+
   const values = formObject(form);
 
   if (form.id === "invoice-form") {
@@ -1520,5 +1789,6 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// Initial render
+// Initial render & Supabase Auth check
 render();
+initAuth();

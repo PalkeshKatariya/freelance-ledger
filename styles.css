@@ -1449,6 +1449,65 @@ textarea {
 }
 
 /* ==========================================================================
+   SUPABASE SYNC INDICATOR & AUTH STYLES
+   ========================================================================== */
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-positive);
+  box-shadow: 0 0 8px var(--color-positive);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sync-dot.offline {
+  background: var(--text-muted);
+  box-shadow: none;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  background: var(--bg-canvas);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-card);
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all 0.18s ease;
+  text-align: center;
+}
+
+.auth-tab-btn.active {
+  background: #ffffff;
+  color: var(--accent-orange);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-status-card {
+  background: #fff8f5;
+  border: 1px solid #ffd8c4;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ==========================================================================
    MOBILE FLOATING CAPSULE NAVIGATION (From Calfo Reference)
    ========================================================================== */
 .mobile-nav-container {
