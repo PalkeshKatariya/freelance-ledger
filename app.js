@@ -1,5 +1,5 @@
 /* Total Berries · Freelance Ledger: all records remain in this browser unless exported. */
-const KEY = "freelance-ledger-v1";
+const KEY = "total-berries-v2";
 const today = () => new Date().toISOString().slice(0, 10);
 const plusDays = days => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const uid = () => crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -18,8 +18,8 @@ let toastTimer;
 
 function load() {
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (!saved) return getInitialSeedData();
+    const saved = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem("freelance-ledger-v1") || "null");
+    if (!saved || !saved.invoices || saved.invoices.length === 0) return getInitialSeedData();
     return { ...emptyData(), ...saved, settings: { ...emptyData().settings, ...saved.settings } };
   } catch {
     return getInitialSeedData();
@@ -79,7 +79,7 @@ function dateText(value) {
 }
 
 function escape(text = "") {
-  return String(text).replace(/[&<>'"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" })[c]);
+  return String(text).replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[c]);
 }
 
 function invoiceAmount(invoice) {
@@ -163,10 +163,10 @@ function sparklineSvg(points = [12, 18, 15, 28, 24, 38, 34, 48], isPositive = tr
 function generateTrendChart(timeframe = "1M") {
   const configs = {
     "24H": { points: [42, 45, 43, 49, 54, 52, 60, 58, 64, 68], labels: ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"], growth: "+2.4%" },
-    "7D":  { points: [50, 58, 54, 65, 72, 68, 80, 85], labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], growth: "+6.8%" },
-    "1M":  { points: [60, 58, 68, 74, 70, 82, 88, 95], labels: ["Week 1", "Week 2", "Week 3", "Week 4"], growth: "+14.2%" },
-    "3M":  { points: [45, 55, 50, 68, 75, 84, 92, 105], labels: ["Sep", "Oct", "Nov"], growth: "+22.5%" },
-    "1Y":  { points: [30, 42, 48, 55, 62, 70, 85, 98, 110, 125], labels: ["Q1", "Q2", "Q3", "Q4"], growth: "+48.0%" },
+    "7D": { points: [50, 58, 54, 65, 72, 68, 80, 85], labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], growth: "+6.8%" },
+    "1M": { points: [60, 58, 68, 74, 70, 82, 88, 95], labels: ["Week 1", "Week 2", "Week 3", "Week 4"], growth: "+14.2%" },
+    "3M": { points: [45, 55, 50, 68, 75, 84, 92, 105], labels: ["Sep", "Oct", "Nov"], growth: "+22.5%" },
+    "1Y": { points: [30, 42, 48, 55, 62, 70, 85, 98, 110, 125], labels: ["Q1", "Q2", "Q3", "Q4"], growth: "+48.0%" },
     "ALL": { points: [20, 35, 48, 65, 78, 92, 115, 138], labels: ["2024", "2025", "2026"], growth: "+72.3%" }
   };
   const config = configs[timeframe] || configs["1M"];
@@ -236,7 +236,7 @@ function render() {
   const content = document.getElementById("content");
   const views = { dashboard, invoices, payments, expenses, clients, projects, reports, settings };
   content.innerHTML = (views[currentView] || dashboard)();
-  
+
   // Update desktop sidebar and mobile navigation active states
   document.querySelectorAll("[data-view]").forEach(a => {
     const isMatch = a.dataset.view === currentView || (a.dataset.view === "more" && ["clients", "projects", "reports", "settings"].includes(currentView));
@@ -266,8 +266,8 @@ function dashboard() {
   const totalBalance = Math.max(0, income - expenses);
   const outstanding = data.invoices.filter(i => !i.draft).reduce((sum, i) => sum + balance(i), 0);
   const overdue = data.invoices.filter(i => invoiceStatus(i) === "Overdue").reduce((sum, i) => sum + balance(i), 0);
-  const due = [...data.invoices].filter(i => !i.draft && balance(i) > 0).sort((a,b) => (a.dueDate || "9999").localeCompare(b.dueDate || "9999")).slice(0, 5);
-  const latest = [...data.payments].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
+  const due = [...data.invoices].filter(i => !i.draft && balance(i) > 0).sort((a, b) => (a.dueDate || "9999").localeCompare(b.dueDate || "9999")).slice(0, 5);
+  const latest = [...data.payments].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
 
   // Top client highlight (featured card from Screen 3)
   const topClient = data.clients[0] || { name: "Direct Client" };
@@ -456,8 +456,8 @@ function dashboard() {
    ========================================================================== */
 function invoices() {
   const q = searchText.toLowerCase();
-  const rows = [...data.invoices].filter(i => `${i.number} ${clientName(i.clientId)}`.toLowerCase().includes(q)).sort((a,b) => b.issueDate.localeCompare(a.issueDate));
-  
+  const rows = [...data.invoices].filter(i => `${i.number} ${clientName(i.clientId)}`.toLowerCase().includes(q)).sort((a, b) => b.issueDate.localeCompare(a.issueDate));
+
   return `
     ${heading("Invoices", "Manage client billings, tracking balances and payment terms.", `
       <button class="pill-btn pill-btn-neon" data-action="new-invoice">
@@ -513,7 +513,7 @@ function invoices() {
    VIEW: PAYMENTS
    ========================================================================== */
 function payments() {
-  const rows = [...data.payments].sort((a,b) => b.date.localeCompare(a.date));
+  const rows = [...data.payments].sort((a, b) => b.date.localeCompare(a.date));
   const totalReceived = rows.reduce((s, p) => s + Number(p.amount), 0);
 
   return `
@@ -544,8 +544,8 @@ function payments() {
           </thead>
           <tbody>
             ${rows.map(p => {
-              const inv = data.invoices.find(i => i.id === p.invoiceId);
-              return `
+    const inv = data.invoices.find(i => i.id === p.invoiceId);
+    return `
                 <tr>
                   <td>${dateText(p.date)}</td>
                   <td class="primary-text">${escape(inv?.number || p.invoiceNumber || "—")}</td>
@@ -555,7 +555,7 @@ function payments() {
                   <td class="money positive">+${currency(p.amount)}</td>
                 </tr>
               `;
-            }).join("")}
+  }).join("")}
           </tbody>
         </table>
       ` : noRows("No payments recorded yet", "Record a deposit", "new-payment")}
@@ -567,8 +567,8 @@ function payments() {
    VIEW: EXPENSES
    ========================================================================== */
 function expenses() {
-  const rows = [...data.expenses].sort((a,b) => b.date.localeCompare(a.date));
-  const total = rows.reduce((s,e) => s + Number(e.amount), 0);
+  const rows = [...data.expenses].sort((a, b) => b.date.localeCompare(a.date));
+  const total = rows.reduce((s, e) => s + Number(e.amount), 0);
 
   return `
     ${heading("Expenses", "Record business tools, cloud hosting, travel, and supplies.", `
@@ -616,7 +616,7 @@ function expenses() {
    VIEW: CLIENTS
    ========================================================================== */
 function clients() {
-  const rows = [...data.clients].sort((a,b) => a.name.localeCompare(b.name));
+  const rows = [...data.clients].sort((a, b) => a.name.localeCompare(b.name));
 
   return `
     ${heading("Clients & Partners", "Manage contact information, GST numbers, and payment history.", `
@@ -640,8 +640,8 @@ function clients() {
           </thead>
           <tbody>
             ${rows.map(c => {
-              const outstanding = data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s,i) => s + balance(i), 0);
-              return `
+    const outstanding = data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s, i) => s + balance(i), 0);
+    return `
                 <tr>
                   <td>
                     <div class="primary-text">${escape(c.name)}</div>
@@ -658,7 +658,7 @@ function clients() {
                   </td>
                 </tr>
               `;
-            }).join("")}
+  }).join("")}
           </tbody>
         </table>
       ` : noRows("No clients yet", "Add your first client", "new-client")}
@@ -670,7 +670,7 @@ function clients() {
    VIEW: PROJECTS
    ========================================================================== */
 function projects() {
-  const rows = [...data.projects].sort((a,b) => a.name.localeCompare(b.name));
+  const rows = [...data.projects].sort((a, b) => a.name.localeCompare(b.name));
 
   return `
     ${heading("Projects", "Organize client deliverables and invoice milestones.", `
@@ -715,23 +715,23 @@ function projects() {
    VIEW: REPORTS & ANALYTICS
    ========================================================================== */
 function reports() {
-  const months = [-5,-4,-3,-2,-1,0].map(monthRange);
+  const months = [-5, -4, -3, -2, -1, 0].map(monthRange);
   const values = months.map(m => ({
     ...m,
     income: paymentsInRange(m.start, m.end),
     expense: expensesInRange(m.start, m.end)
   }));
   const max = Math.max(1, ...values.flatMap(v => [v.income, v.expense]));
-  const received = values.reduce((s,v) => s + v.income, 0);
-  const spent = values.reduce((s,v) => s + v.expense, 0);
+  const received = values.reduce((s, v) => s + v.income, 0);
+  const spent = values.reduce((s, v) => s + v.expense, 0);
   const netSurplus = received - spent;
-  const unpaid = data.invoices.reduce((s,i) => s + balance(i), 0);
+  const unpaid = data.invoices.reduce((s, i) => s + balance(i), 0);
 
   const byClient = data.clients.map(c => ({
     name: c.name,
-    paid: data.invoices.filter(i => i.clientId === c.id).reduce((sum,i) => sum + paidAmount(i.id), 0),
-    due: data.invoices.filter(i => i.clientId === c.id).reduce((sum,i) => sum + balance(i), 0)
-  })).filter(x => x.paid || x.due).sort((a,b) => b.paid - a.paid);
+    paid: data.invoices.filter(i => i.clientId === c.id).reduce((sum, i) => sum + paidAmount(i.id), 0),
+    due: data.invoices.filter(i => i.clientId === c.id).reduce((sum, i) => sum + balance(i), 0)
+  })).filter(x => x.paid || x.due).sort((a, b) => b.paid - a.paid);
 
   return `
     ${heading("Financial Analytics", "Six-month cashflow velocity and client profitability.", `
@@ -837,15 +837,15 @@ function settings() {
             </div>
             <div class="field">
               <label>Next Invoice #</label>
-              <input name="nextInvoice" type="number" min="1" value="${Number(s.nextInvoice)||1}" />
+              <input name="nextInvoice" type="number" min="1" value="${Number(s.nextInvoice) || 1}" />
             </div>
             <div class="field">
               <label>Payment Terms</label>
               <select name="defaultDueDays">
-                <option value="7" ${s.defaultDueDays==7?"selected":""}>7 days</option>
-                <option value="15" ${s.defaultDueDays==15?"selected":""}>15 days</option>
-                <option value="30" ${s.defaultDueDays==30?"selected":""}>30 days</option>
-                <option value="45" ${s.defaultDueDays==45?"selected":""}>45 days</option>
+                <option value="7" ${s.defaultDueDays == 7 ? "selected" : ""}>7 days</option>
+                <option value="15" ${s.defaultDueDays == 15 ? "selected" : ""}>15 days</option>
+                <option value="30" ${s.defaultDueDays == 30 ? "selected" : ""}>30 days</option>
+                <option value="45" ${s.defaultDueDays == 45 ? "selected" : ""}>45 days</option>
               </select>
             </div>
           </div>
@@ -914,11 +914,11 @@ function closeModal() {
 }
 
 function optionClients(selected = "", blank = "Choose a client") {
-  return `<option value="">${blank}</option>${data.clients.map(c => `<option value="${c.id}" ${c.id===selected?"selected":""}>${escape(c.name)}</option>`).join("")}`;
+  return `<option value="">${blank}</option>${data.clients.map(c => `<option value="${c.id}" ${c.id === selected ? "selected" : ""}>${escape(c.name)}</option>`).join("")}`;
 }
 
 function optionProjects(selected = "") {
-  return `<option value="">No project</option>${data.projects.map(p => `<option value="${p.id}" ${p.id===selected?"selected":""}>${escape(p.name)}</option>`).join("")}`;
+  return `<option value="">No project</option>${data.projects.map(p => `<option value="${p.id}" ${p.id === selected ? "selected" : ""}>${escape(p.name)}</option>`).join("")}`;
 }
 
 function invoiceForm() {
@@ -963,7 +963,7 @@ function invoiceForm() {
         </div>
         <div class="field">
           <label>Due Date</label>
-          <input name="dueDate" type="date" value="${plusDays(Number(data.settings.defaultDueDays)||15)}" required />
+          <input name="dueDate" type="date" value="${plusDays(Number(data.settings.defaultDueDays) || 15)}" required />
         </div>
         <div class="field">
           <label>GST Rate <span class="help">optional</span></label>
@@ -1173,9 +1173,9 @@ function projectForm(id = "") {
         <div class="field">
           <label>Status</label>
           <select name="status">
-            <option ${p.status==="Active"?"selected":""}>Active</option>
-            <option ${p.status==="Completed"?"selected":""}>Completed</option>
-            <option ${p.status==="On hold"?"selected":""}>On hold</option>
+            <option ${p.status === "Active" ? "selected" : ""}>Active</option>
+            <option ${p.status === "Completed" ? "selected" : ""}>Completed</option>
+            <option ${p.status === "On hold" ? "selected" : ""}>On hold</option>
           </select>
         </div>
         <div class="field full">
@@ -1197,8 +1197,8 @@ function projectForm(id = "") {
 function invoiceDetail(id) {
   const i = data.invoices.find(x => x.id === id);
   if (!i) return;
-  const payments = data.payments.filter(p => p.invoiceId === id).sort((a,b) => b.date.localeCompare(a.date));
-  
+  const payments = data.payments.filter(p => p.invoiceId === id).sort((a, b) => b.date.localeCompare(a.date));
+
   showModal(i.number, `
     <div class="form">
       <div class="invoice-summary">
@@ -1267,7 +1267,7 @@ function exportBackup() {
 function exportExpenses() {
   const csv = [
     "Date,Category,Description,Payment mode,Amount INR",
-    ...data.expenses.map(e => [e.date, e.category, e.description, e.mode, e.amount].map(v => `"${String(v||"").replaceAll('"','""')}"`).join(","))
+    ...data.expenses.map(e => [e.date, e.category, e.description, e.mode, e.amount].map(v => `"${String(v || "").replaceAll('"', '""')}"`).join(","))
   ].join("\n");
   download(`expenses-${today()}.csv`, csv, "text/csv");
 }
@@ -1278,7 +1278,7 @@ function exportReport() {
     `Generated: ${today()}`,
     "",
     "Invoice Number,Client,Invoice Total INR,Paid INR,Balance INR,Status",
-    ...data.invoices.map(i => [i.number, clientName(i.clientId), invoiceAmount(i), paidAmount(i.id), balance(i), invoiceStatus(i)].map(v => `"${String(v).replaceAll('"','""')}"`).join(","))
+    ...data.invoices.map(i => [i.number, clientName(i.clientId), invoiceAmount(i), paidAmount(i.id), balance(i), invoiceStatus(i)].map(v => `"${String(v).replaceAll('"', '""')}"`).join(","))
   ];
   download(`financial-summary-${today()}.csv`, lines.join("\n"), "text/csv");
 }
@@ -1500,7 +1500,7 @@ window.addEventListener("hashchange", () => {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    navigator.serviceWorker.register("./sw.js").catch(() => { });
   });
 }
 
