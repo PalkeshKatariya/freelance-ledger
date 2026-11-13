@@ -1213,6 +1213,122 @@ tr.clickable:hover {
 }
 
 /* ==========================================================================
+   MOBILE TRANSACTION & INVOICE CARDS (Native iOS/Fintech Aesthetic)
+   ========================================================================== */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+.mobile-cards-list {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.invoice-mobile-card,
+.payment-mobile-card,
+.expense-mobile-card,
+.client-mobile-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.16s ease;
+  position: relative;
+}
+
+.invoice-mobile-card.clickable,
+.expense-mobile-card.clickable {
+  cursor: pointer;
+}
+
+.invoice-mobile-card.clickable:active,
+.expense-mobile-card.clickable:active {
+  transform: scale(0.98);
+  border-color: var(--accent-orange);
+  background: var(--bg-card-hover);
+}
+
+.imc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.imc-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.imc-number {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 3px;
+  word-break: break-word;
+}
+
+.imc-client {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.imc-project {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.imc-right {
+  text-align: right;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.imc-amount {
+  font-size: 16.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.imc-status {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.imc-bottom {
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.imc-due {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.imc-issued {
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
    MODAL & FORMS (Calfo Light Glass Aesthetic)
    ========================================================================== */
 .modal-backdrop {
@@ -1684,27 +1800,60 @@ textarea {
    MOBILE PHONES (<= 640px)
    ========================================================================== */
 @media (max-width: 640px) {
-  .view-heading {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
     gap: 10px;
     margin-bottom: 16px;
   }
 
+  .search {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    font-size: 14px;
+    height: 44px;
+    padding: 10px 18px;
+    border-radius: var(--radius-full);
+  }
+
+  .toolbar-group {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .view-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  .view-heading > .pill-btn {
+    display: none;
+  }
+
   .view-heading h1 {
-    font-size: 22px;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0;
   }
 
   .view-heading .subtitle {
-    font-size: 12.5px;
-    line-height: 1.35;
-  }
-
-  .view-heading .pill-btn {
-    padding: 8px 12px;
-    font-size: 12.5px;
-    height: 36px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
   }
 
   .hero-card {

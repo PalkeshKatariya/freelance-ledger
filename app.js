@@ -768,8 +768,9 @@ function invoices() {
       </div>
     </div>
 
-    <div class="table-wrap">
-      ${rows.length ? `
+    ${rows.length ? `
+      <!-- Desktop Table View -->
+      <div class="table-wrap desktop-only">
         <table>
           <thead>
             <tr>
@@ -799,8 +800,31 @@ function invoices() {
             `).join("")}
           </tbody>
         </table>
-      ` : noRows("No invoices yet", "Create your first invoice", "new-invoice")}
-    </div>
+      </div>
+
+      <!-- Mobile Touch-Optimized Cards -->
+      <div class="mobile-cards-list mobile-only">
+        ${rows.map(i => `
+          <article class="invoice-mobile-card clickable" data-action="invoice-detail" data-id="${i.id}">
+            <div class="imc-top">
+              <div class="imc-left">
+                <div class="imc-number">${escape(i.number)}</div>
+                <div class="imc-client">${escape(clientName(i.clientId))}</div>
+                ${i.projectId ? `<div class="imc-project">${escape(projectName(i.projectId))}</div>` : ""}
+              </div>
+              <div class="imc-right">
+                <div class="imc-amount money">${currency(balance(i))}</div>
+                <div class="imc-status">${statusPill(invoiceStatus(i))}</div>
+              </div>
+            </div>
+            <div class="imc-bottom">
+              <span class="imc-due">📅 Due ${dateText(i.dueDate)}</span>
+              <span class="imc-issued">Issued ${dateText(i.issueDate)}</span>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    ` : noRows("No invoices yet", "Create your first invoice", "new-invoice")}
   `;
 }
 
@@ -824,8 +848,9 @@ function payments() {
       <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="export-report">Export Log</button>
     </div>
 
-    <div class="table-wrap">
-      ${rows.length ? `
+    ${rows.length ? `
+      <!-- Desktop Table View -->
+      <div class="table-wrap desktop-only">
         <table>
           <thead>
             <tr>
@@ -853,8 +878,33 @@ function payments() {
             }).join("")}
           </tbody>
         </table>
-      ` : noRows("No payments recorded yet", "Record a deposit", "new-payment")}
-    </div>
+      </div>
+
+      <!-- Mobile Touch-Optimized Cards -->
+      <div class="mobile-cards-list mobile-only">
+        ${rows.map(p => {
+          const inv = data.invoices.find(i => i.id === p.invoiceId);
+          return `
+            <article class="payment-mobile-card">
+              <div class="imc-top">
+                <div class="imc-left">
+                  <div class="imc-number">${escape(inv?.number || p.invoiceNumber || "Direct Deposit")}</div>
+                  <div class="imc-client">${escape(inv ? clientName(inv.clientId) : "Payment")}</div>
+                </div>
+                <div class="imc-right">
+                  <div class="imc-amount money positive">+${currency(p.amount)}</div>
+                  <div class="imc-status"><span class="status status-paid">${escape(p.mode)}</span></div>
+                </div>
+              </div>
+              <div class="imc-bottom">
+                <span>Ref: ${escape(p.reference || "—")}</span>
+                <span>${dateText(p.date)}</span>
+              </div>
+            </article>
+          `;
+        }).join("")}
+      </div>
+    ` : noRows("No payments recorded yet", "Record a deposit", "new-payment")}
   `;
 }
 
@@ -878,8 +928,9 @@ function expenses() {
       <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="export-expenses">Export CSV</button>
     </div>
 
-    <div class="table-wrap">
-      ${rows.length ? `
+    ${rows.length ? `
+      <!-- Desktop Table View -->
+      <div class="table-wrap desktop-only">
         <table>
           <thead>
             <tr>
@@ -902,8 +953,29 @@ function expenses() {
             `).join("")}
           </tbody>
         </table>
-      ` : noRows("No expenses recorded yet", "Add an expense", "new-expense")}
-    </div>
+      </div>
+
+      <!-- Mobile Touch-Optimized Cards -->
+      <div class="mobile-cards-list mobile-only">
+        ${rows.map(e => `
+          <article class="expense-mobile-card">
+            <div class="imc-top">
+              <div class="imc-left">
+                <div class="imc-number">${escape(e.description || e.category)}</div>
+                <div class="imc-client"><span class="status status-draft">${escape(e.category)}</span> &middot; ${escape(e.mode)}</div>
+              </div>
+              <div class="imc-right">
+                <div class="imc-amount money negative">-${currency(e.amount)}</div>
+              </div>
+            </div>
+            <div class="imc-bottom">
+              <span>${dateText(e.date)}</span>
+              <span class="secondary-text" style="font-size:11px;">${escape(e.mode)}</span>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    ` : noRows("No expenses recorded yet", "Add an expense", "new-expense")}
   `;
 }
 
@@ -921,8 +993,9 @@ function clients() {
       </button>
     `)}
 
-    <div class="table-wrap">
-      ${rows.length ? `
+    ${rows.length ? `
+      <!-- Desktop Table View -->
+      <div class="table-wrap desktop-only">
         <table>
           <thead>
             <tr>
@@ -956,8 +1029,33 @@ function clients() {
             }).join("")}
           </tbody>
         </table>
-      ` : noRows("No clients yet", "Add your first client", "new-client")}
-    </div>
+      </div>
+
+      <!-- Mobile Touch-Optimized Cards -->
+      <div class="mobile-cards-list mobile-only">
+        ${rows.map(c => {
+          const outstanding = data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s,i) => s + balance(i), 0);
+          return `
+            <article class="client-mobile-card">
+              <div class="imc-top">
+                <div class="imc-left">
+                  <div class="imc-number">${escape(c.name)}</div>
+                  <div class="imc-client">${escape(c.email || c.phone || "No contact info")}</div>
+                </div>
+                <div class="imc-right">
+                  <div class="imc-amount money">${currency(outstanding)}</div>
+                  <div class="secondary-text" style="font-size:10.5px;">Due</div>
+                </div>
+              </div>
+              <div class="imc-bottom">
+                <span>GST: ${escape(c.gstin || "—")}</span>
+                <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-client" data-id="${c.id}">Edit</button>
+              </div>
+            </article>
+          `;
+        }).join("")}
+      </div>
+    ` : noRows("No clients yet", "Add your first client", "new-client")}
   `;
 }
 
