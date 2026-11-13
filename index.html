@@ -21,7 +21,7 @@
     if ('caches' in window) {
       caches.keys().then(function(keys) {
         keys.forEach(function(k) {
-          if (k !== 'total-berries-v9') { caches.delete(k); }
+          if (k !== 'total-berries-v10') { caches.delete(k); }
         });
       });
     }
@@ -38,7 +38,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=6.0" />
+  <link rel="stylesheet" href="styles.css?v=7.0" />
   <title>Total Berries · Freelance Ledger</title>
 </head>
 
@@ -259,7 +259,7 @@
   <input id="import-file" type="file" accept="application/json" hidden />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=8.0"></script>
+  <script src="app.js?v=9.0"></script>
 </body>
 
 </html>

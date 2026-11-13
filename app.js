@@ -478,7 +478,7 @@ function generateTrendChart(timeframe = "1M") {
 
   return `
     <div class="chart-container">
-      <div class="chart-tooltip-badge" style="left: ${((lastPoint.x / width) * 100).toFixed(1)}%; top: ${(lastPoint.y - 14).toFixed(1)}px;">
+      <div class="chart-tooltip-badge">
         <span style="color:var(--accent-orange)">●</span> High: ${currency(max)}
       </div>
       <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
@@ -595,15 +595,15 @@ function dashboard() {
       <div class="hero-actions">
         <button class="pill-btn pill-btn-navy" data-action="new-invoice">
           <span class="btn-icon">+</span>
-          <span>New Invoice</span>
+          <span>Invoice</span>
         </button>
         <button class="pill-btn pill-btn-white" data-action="new-payment">
           <span class="btn-icon">↓</span>
-          <span>Record Deposit</span>
+          <span>Deposit</span>
         </button>
         <button class="pill-btn pill-btn-ghost" data-action="new-expense">
           <span class="btn-icon">↗</span>
-          <span>Add Expense</span>
+          <span>Expense</span>
         </button>
       </div>
     </section>
@@ -1110,6 +1110,12 @@ function settings() {
   const s = data.settings;
   return `
     ${heading("Settings & Vault", "Manage your business details, Supabase sync, and local backups.")}
+
+    <div class="mobile-quick-nav">
+      <a href="#clients" class="pill-btn pill-btn-ghost pill-btn-sm">👥 Clients (${data.clients.length})</a>
+      <a href="#projects" class="pill-btn pill-btn-ghost pill-btn-sm">📁 Projects (${data.projects.length})</a>
+      <a href="#expenses" class="pill-btn pill-btn-ghost pill-btn-sm">💳 Expenses (${data.expenses.length})</a>
+    </div>
 
     <div class="grid-2">
       <article class="card panel">
