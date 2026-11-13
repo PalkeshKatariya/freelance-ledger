@@ -1,13 +1,23 @@
-/* Total Berries · Freelance Ledger: all records remain in this browser unless exported. */
-const KEY = "total-berries-v2";
+/* Total Berries · Freelance Ledger: all records remain strictly in this browser. */
+const KEY = "total-berries-clean-v1";
 const today = () => new Date().toISOString().slice(0, 10);
 const plusDays = days => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const uid = () => crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
 const emptyData = () => ({
   version: 1,
-  settings: { businessName: "Total Berries Studio", gstin: "", invoicePrefix: "TB", nextInvoice: 1, defaultDueDays: 15 },
-  clients: [], projects: [], invoices: [], payments: [], expenses: []
+  settings: {
+    businessName: "Total Berries",
+    gstin: "",
+    invoicePrefix: "TB",
+    nextInvoice: 1,
+    defaultDueDays: 15
+  },
+  clients: [],
+  projects: [],
+  invoices: [],
+  payments: [],
+  expenses: []
 });
 
 let data = load();
@@ -18,52 +28,12 @@ let toastTimer;
 
 function load() {
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem("freelance-ledger-v1") || "null");
-    if (!saved || !saved.invoices || saved.invoices.length === 0) return getInitialSeedData();
+    const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (!saved) return emptyData();
     return { ...emptyData(), ...saved, settings: { ...emptyData().settings, ...saved.settings } };
   } catch {
-    return getInitialSeedData();
+    return emptyData();
   }
-}
-
-function getInitialSeedData() {
-  return {
-    version: 1,
-    settings: {
-      businessName: "Total Berries Studio",
-      gstin: "27AAPFU0912K1Z5",
-      invoicePrefix: "TB",
-      nextInvoice: 5,
-      defaultDueDays: 15
-    },
-    clients: [
-      { id: "c1", name: "Amazon India", email: "billing@amazon.in", phone: "+91 98200 12345", contact: "Priya Sharma", address: "Bengaluru, KA" },
-      { id: "c2", name: "Spotify Studios", email: "finance@spotify.com", phone: "+91 98111 54321", contact: "Arjun Verma", address: "Mumbai, MH" },
-      { id: "c3", name: "Nike Brand Labs", email: "accounts@nike.com", phone: "+91 99000 88888", contact: "Rohan Mehta", address: "Gurugram, HR" },
-      { id: "c4", name: "Starbucks India", email: "vendor@starbucks.in", phone: "+91 97111 22233", contact: "Neha Kapur", address: "New Delhi, DL" }
-    ],
-    projects: [
-      { id: "p1", clientId: "c1", name: "AWS Cloud Dashboard UI", status: "Active" },
-      { id: "p2", clientId: "c2", name: "Podcast Creator Portal", status: "Active" },
-      { id: "p3", clientId: "c3", name: "Campaign Landing Page", status: "Completed" }
-    ],
-    invoices: [
-      { id: "i1", clientId: "c1", projectId: "p1", number: "TB-001", amount: 84000, gstRate: 18, issueDate: plusDays(-24), dueDate: plusDays(-9), draft: false },
-      { id: "i2", clientId: "c2", projectId: "p2", number: "TB-002", amount: 65000, gstRate: 18, issueDate: plusDays(-14), dueDate: plusDays(1), draft: false },
-      { id: "i3", clientId: "c3", projectId: "p3", number: "TB-003", amount: 48000, gstRate: 18, issueDate: plusDays(-6), dueDate: plusDays(9), draft: false },
-      { id: "i4", clientId: "c4", projectId: "", number: "TB-004", amount: 35000, gstRate: 18, issueDate: plusDays(-2), dueDate: plusDays(13), draft: false }
-    ],
-    payments: [
-      { id: "pay1", invoiceId: "i1", invoiceNumber: "TB-001", amount: 99120, date: plusDays(-8), mode: "Bank transfer", reference: "NEFT8921831" },
-      { id: "pay2", invoiceId: "i2", invoiceNumber: "TB-002", amount: 38350, date: plusDays(-3), mode: "UPI", reference: "UPI/3829108" }
-    ],
-    expenses: [
-      { id: "e1", category: "Software & subscriptions", description: "Figma & Vercel Pro", amount: 4200, date: plusDays(-18), mode: "Card" },
-      { id: "e2", category: "Equipment", description: "Mechanical Keyboard & USB Hub", amount: 8500, date: plusDays(-12), mode: "UPI" },
-      { id: "e3", category: "Internet & phone", description: "High-speed Fiber", amount: 1499, date: plusDays(-5), mode: "UPI" },
-      { id: "e4", category: "Travel", description: "Client meeting travel", amount: 950, date: plusDays(-2), mode: "Cash" }
-    ]
-  };
 }
 
 function save() {
@@ -79,7 +49,7 @@ function dateText(value) {
 }
 
 function escape(text = "") {
-  return String(text).replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[c]);
+  return String(text).replace(/[&<>'"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" })[c]);
 }
 
 function invoiceAmount(invoice) {
@@ -142,13 +112,18 @@ function notify(message) {
 }
 
 /* ==========================================================================
-   SVG CHART & SPARKLINES HELPERS
+   SVG CHARTS & SPARKLINES HELPERS (Calculated from Real Data)
    ========================================================================== */
-function sparklineSvg(points = [12, 18, 15, 28, 24, 38, 34, 48], isPositive = true, width = 64, height = 26) {
+function sparklineSvg(points = [], isPositive = true, width = 64, height = 26) {
+  if (!points.length || points.every(p => p === 0)) {
+    return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
+      <line x1="0" y1="${height / 2}" x2="${width}" y2="${height / 2}" stroke="var(--border-card)" stroke-width="2" stroke-dasharray="3 3"/>
+    </svg>`;
+  }
   const min = Math.min(...points);
   const max = Math.max(...points);
   const range = max - min || 1;
-  const step = width / (points.length - 1);
+  const step = width / (points.length - 1 || 1);
   const coords = points.map((p, i) => {
     const x = (i * step).toFixed(1);
     const y = (height - 4 - ((p - min) / range) * (height - 8)).toFixed(1);
@@ -161,26 +136,63 @@ function sparklineSvg(points = [12, 18, 15, 28, 24, 38, 34, 48], isPositive = tr
 }
 
 function generateTrendChart(timeframe = "1M") {
-  const configs = {
-    "24H": { points: [42, 45, 43, 49, 54, 52, 60, 58, 64, 68], labels: ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"], growth: "+2.4%" },
-    "7D":  { points: [50, 58, 54, 65, 72, 68, 80, 85], labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], growth: "+6.8%" },
-    "1M":  { points: [60, 58, 68, 74, 70, 82, 88, 95], labels: ["Week 1", "Week 2", "Week 3", "Week 4"], growth: "+14.2%" },
-    "3M":  { points: [45, 55, 50, 68, 75, 84, 92, 105], labels: ["Sep", "Oct", "Nov"], growth: "+22.5%" },
-    "1Y":  { points: [30, 42, 48, 55, 62, 70, 85, 98, 110, 125], labels: ["Q1", "Q2", "Q3", "Q4"], growth: "+48.0%" },
-    "ALL": { points: [20, 35, 48, 65, 78, 92, 115, 138], labels: ["2024", "2025", "2026"], growth: "+72.3%" }
-  };
-  const config = configs[timeframe] || configs["1M"];
   const width = 680;
   const height = 180;
-  const points = config.points;
-  const min = Math.min(...points) * 0.9;
-  const max = Math.max(...points) * 1.05;
-  const range = max - min || 1;
-  const stepX = width / (points.length - 1);
+  
+  // Calculate real points from user recorded payments
+  let points = [];
+  let labels = [];
+
+  if (timeframe === "24H") {
+    labels = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"];
+    const todayPayments = data.payments.filter(p => p.date === today()).reduce((s, p) => s + Number(p.amount), 0);
+    points = todayPayments > 0 ? [0, todayPayments * 0.2, todayPayments * 0.4, todayPayments * 0.6, todayPayments * 0.8, todayPayments] : [0, 0, 0, 0, 0, 0];
+  } else if (timeframe === "7D") {
+    const days = [-6, -5, -4, -3, -2, -1, 0];
+    labels = days.map(offset => {
+      const d = new Date();
+      d.setDate(d.getDate() + offset);
+      return d.toLocaleDateString("en-IN", { weekday: "short" });
+    });
+    points = days.map(offset => {
+      const dStr = plusDays(offset);
+      return data.payments.filter(p => p.date === dStr).reduce((s, p) => s + Number(p.amount), 0);
+    });
+  } else if (timeframe === "1M") {
+    labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+    const m = monthRange();
+    points = [1, 2, 3, 4].map(w => {
+      const startDay = (w - 1) * 7 + 1;
+      const endDay = w === 4 ? 31 : w * 7;
+      return data.payments.filter(p => {
+        if (p.date < m.start || p.date > m.end) return false;
+        const dayNum = parseInt(p.date.slice(8), 10);
+        return dayNum >= startDay && dayNum <= endDay;
+      }).reduce((s, p) => s + Number(p.amount), 0);
+    });
+  } else if (timeframe === "3M") {
+    const months = [-2, -1, 0].map(monthRange);
+    labels = months.map(m => m.label);
+    points = months.map(m => paymentsInRange(m.start, m.end));
+  } else if (timeframe === "1Y") {
+    const months = [-11, -9, -7, -5, -3, -1].map(monthRange);
+    labels = months.map(m => m.label);
+    points = months.map(m => paymentsInRange(m.start, m.end));
+  } else {
+    // ALL
+    const months = [-5, -4, -3, -2, -1, 0].map(monthRange);
+    labels = months.map(m => m.label);
+    points = months.map(m => paymentsInRange(m.start, m.end));
+  }
+
+  const max = Math.max(0, ...points);
+  const min = Math.min(0, ...points);
+  const range = max > 0 ? max - min : 1;
+  const stepX = width / (points.length - 1 || 1);
 
   const coords = points.map((p, i) => ({
     x: i * stepX,
-    y: height - 25 - ((p - min) / range) * (height - 50)
+    y: max > 0 ? height - 30 - ((p - min) / range) * (height - 60) : height - 35
   }));
 
   // Build smooth cubic Bézier curve
@@ -201,8 +213,8 @@ function generateTrendChart(timeframe = "1M") {
 
   return `
     <div class="chart-container">
-      <div class="chart-tooltip-badge" style="left: ${((lastPoint.x / width) * 100).toFixed(1)}%; top: ${(lastPoint.y - 12).toFixed(1)}px;">
-        <span style="color:var(--accent-orange)">●</span> High: ${currency(max * 1000)}
+      <div class="chart-tooltip-badge" style="left: ${((lastPoint.x / width) * 100).toFixed(1)}%; top: ${(lastPoint.y - 14).toFixed(1)}px;">
+        <span style="color:var(--accent-orange)">●</span> High: ${currency(max)}
       </div>
       <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
         <defs>
@@ -225,7 +237,7 @@ function generateTrendChart(timeframe = "1M") {
       </svg>
       <!-- X-axis labels -->
       <div style="display:flex; justify-content:space-between; padding-top:6px; color:rgba(255,255,255,0.85); font-size:11px; font-weight:700;">
-        ${config.labels.map(l => `<span>${l}</span>`).join("")}
+        ${labels.map(l => `<span>${l}</span>`).join("")}
       </div>
     </div>
   `;
@@ -236,7 +248,7 @@ function render() {
   const content = document.getElementById("content");
   const views = { dashboard, invoices, payments, expenses, clients, projects, reports, settings };
   content.innerHTML = (views[currentView] || dashboard)();
-
+  
   // Update desktop sidebar and mobile navigation active states
   document.querySelectorAll("[data-view]").forEach(a => {
     const isMatch = a.dataset.view === currentView || (a.dataset.view === "more" && ["clients", "projects", "reports", "settings"].includes(currentView));
@@ -257,7 +269,7 @@ function statusPill(status) {
 }
 
 /* ==========================================================================
-   VIEW: DASHBOARD (Based closely on Reference Mockup)
+   VIEW: DASHBOARD (Calculated 100% From User Real Data)
    ========================================================================== */
 function dashboard() {
   const month = monthRange();
@@ -266,38 +278,40 @@ function dashboard() {
   const totalBalance = Math.max(0, income - expenses);
   const outstanding = data.invoices.filter(i => !i.draft).reduce((sum, i) => sum + balance(i), 0);
   const overdue = data.invoices.filter(i => invoiceStatus(i) === "Overdue").reduce((sum, i) => sum + balance(i), 0);
-  const due = [...data.invoices].filter(i => !i.draft && balance(i) > 0).sort((a, b) => (a.dueDate || "9999").localeCompare(b.dueDate || "9999")).slice(0, 5);
-  const latest = [...data.payments].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+  const due = [...data.invoices].filter(i => !i.draft && balance(i) > 0).sort((a,b) => (a.dueDate || "9999").localeCompare(b.dueDate || "9999")).slice(0, 5);
+  const latest = [...data.payments].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5);
 
-  // Top client highlight (featured card from Screen 3)
-  const topClient = data.clients[0] || { name: "Direct Client" };
-  const topClientRevenue = data.invoices.filter(i => i.clientId === topClient.id).reduce((s, i) => s + invoiceAmount(i), 0) || 84000;
+  // Past 7 days real numbers
+  const weekDays = [-6, -5, -4, -3, -2, -1, 0].map(offset => {
+    const dStr = plusDays(offset);
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    const inc = data.payments.filter(p => p.date === dStr).reduce((s, p) => s + Number(p.amount), 0);
+    const exp = data.expenses.filter(e => e.date === dStr).reduce((s, e) => s + Number(e.amount), 0);
+    return { label: d.toLocaleDateString("en-IN", { weekday: "narrow" }), inc, exp, date: dStr };
+  });
+  const maxDayVal = Math.max(1, ...weekDays.flatMap(d => [d.inc, d.exp]));
 
-  // Weekly bar data for Screen 1 simulation
-  const weekDays = [
-    { label: "M", inc: 45, exp: 20 },
-    { label: "S", inc: 85, exp: 35 },
-    { label: "T", inc: 65, exp: 25 },
-    { label: "W", inc: 95, exp: 40 },
-    { label: "T", inc: 70, exp: 30 },
-    { label: "F", inc: 90, exp: 50 },
-    { label: "S", inc: 55, exp: 15 }
-  ];
+  // Find top client if any
+  const topClient = data.clients.length ? data.clients.map(c => ({
+    ...c,
+    revenue: data.invoices.filter(i => i.clientId === c.id).reduce((s, i) => s + invoiceAmount(i), 0)
+  })).sort((a, b) => b.revenue - a.revenue)[0] : null;
 
   return `
-    <!-- Hero Financial Overview Card (from Reference Mockup) -->
+    <!-- Hero Financial Overview Card -->
     <section class="hero-card">
       <div class="hero-top">
         <div class="hero-balance-group">
           <div class="hero-badge-icon">₹</div>
           <div class="hero-balance-meta">
             <span class="hero-balance-label">Cash on Hand &middot; Total Balance</span>
-            <div class="hero-balance-amount">${currency(totalBalance || 18908)}</div>
+            <div class="hero-balance-amount">${currency(totalBalance)}</div>
           </div>
         </div>
         <div class="hero-pill-badge">
           <span class="hero-pill-dot"></span>
-          <span>+4.78% (+0.20%) vs last month</span>
+          <span>${data.invoices.length ? `${data.invoices.length} active invoice${data.invoices.length === 1 ? "" : "s"}` : "Ready &middot; Clean slate"}</span>
         </div>
       </div>
 
@@ -308,7 +322,7 @@ function dashboard() {
         `).join("")}
       </div>
 
-      <!-- Interactive SVG Bézier Curve Graph -->
+      <!-- Dynamic SVG Bézier Curve Graph -->
       ${generateTrendChart(selectedTimeframe)}
 
       <!-- Hero Action Buttons (Calfo Navy + White Pills) -->
@@ -333,7 +347,7 @@ function dashboard() {
       <article class="metric-card">
         <div class="metric-header">
           <span class="metric-label">Income Received</span>
-          <div class="metric-sparkline">${sparklineSvg([20, 35, 42, 60, 55, 75, 90], true)}</div>
+          <div class="metric-sparkline">${sparklineSvg(weekDays.map(w => w.inc), true)}</div>
         </div>
         <div>
           <div class="metric-value">${currency(income)}</div>
@@ -344,7 +358,7 @@ function dashboard() {
       <article class="metric-card">
         <div class="metric-header">
           <span class="metric-label">Expenses</span>
-          <div class="metric-sparkline">${sparklineSvg([40, 30, 45, 25, 35, 20, 30], false)}</div>
+          <div class="metric-sparkline">${sparklineSvg(weekDays.map(w => w.exp), false)}</div>
         </div>
         <div>
           <div class="metric-value">${currency(expenses)}</div>
@@ -355,7 +369,7 @@ function dashboard() {
       <article class="metric-card">
         <div class="metric-header">
           <span class="metric-label">Outstanding</span>
-          <div class="metric-sparkline">${sparklineSvg([15, 25, 35, 30, 45, 55, 50], true)}</div>
+          <div class="metric-sparkline">${sparklineSvg(data.invoices.map(i => balance(i)), true)}</div>
         </div>
         <div>
           <div class="metric-value">${currency(outstanding)}</div>
@@ -366,7 +380,7 @@ function dashboard() {
       <article class="metric-card">
         <div class="metric-header">
           <span class="metric-label">Overdue</span>
-          <div class="metric-sparkline">${sparklineSvg([10, 20, 15, 30, 25, 40, 35], false)}</div>
+          <div class="metric-sparkline">${sparklineSvg(data.invoices.filter(i => invoiceStatus(i) === "Overdue").map(i => balance(i)), false)}</div>
         </div>
         <div>
           <div class="metric-value" style="${overdue > 0 ? "color:var(--color-overdue);" : ""}">${currency(overdue)}</div>
@@ -375,32 +389,47 @@ function dashboard() {
       </article>
     </section>
 
-    <!-- Featured Client / Top Retainer Card (Sunset Orange from Calfo) -->
-    <section class="featured-card-orange">
-      <div class="featured-card-left">
-        <div class="featured-avatar">⚡</div>
-        <div>
-          <div class="featured-title">${escape(topClient.name)}</div>
-          <div class="featured-sub">Primary Revenue Partner &middot; Active Retainer</div>
+    <!-- Top Retainer / Quick Starter Card -->
+    ${topClient && topClient.revenue > 0 ? `
+      <section class="featured-card-orange">
+        <div class="featured-card-left">
+          <div class="featured-avatar">⚡</div>
+          <div>
+            <div class="featured-title">${escape(topClient.name)}</div>
+            <div class="featured-sub">Primary Revenue Partner</div>
+          </div>
         </div>
-      </div>
-      <div class="featured-card-right">
-        <div class="featured-value">${currency(topClientRevenue)}</div>
-        <span class="featured-badge">+18.5% YTD</span>
-      </div>
-      <svg class="featured-sparkline-bg" viewBox="0 0 200 60" preserveAspectRatio="none">
-        <path d="M0 45 C 50 15, 100 50, 150 20 L 200 10 L 200 60 L 0 60 Z" fill="#ffffff" />
-      </svg>
-    </section>
+        <div class="featured-card-right">
+          <div class="featured-value">${currency(topClient.revenue)}</div>
+          <span class="featured-badge">Invoiced Total</span>
+        </div>
+        <svg class="featured-sparkline-bg" viewBox="0 0 200 60" preserveAspectRatio="none">
+          <path d="M0 45 C 50 15, 100 50, 150 20 L 200 10 L 200 60 L 0 60 Z" fill="#ffffff" />
+        </svg>
+      </section>
+    ` : `
+      <section class="featured-card-orange">
+        <div class="featured-card-left">
+          <div class="featured-avatar">💼</div>
+          <div>
+            <div class="featured-title">Start by adding your first client</div>
+            <div class="featured-sub">Records remain 100% private in this browser unless exported</div>
+          </div>
+        </div>
+        <div class="featured-card-right">
+          <button class="pill-btn pill-btn-white pill-btn-sm" data-action="new-client">+ Add Client</button>
+        </div>
+      </section>
+    `}
 
     <!-- 2-Column Dashboard Grid: Weekly Bar Chart & Action Lists -->
     <section class="grid-2">
-      <!-- Inflow vs Outflow Dual-Tone Bar Chart (from Screen 1) -->
+      <!-- Inflow vs Outflow Dual-Tone Bar Chart -->
       <article class="card bar-chart-card">
         <div class="panel-head">
           <div>
-            <h2>Weekly Cashflow Flow</h2>
-            <p class="subtitle">Inflow vs Outflow comparison</p>
+            <h2>Weekly Cashflow</h2>
+            <p class="subtitle">${income === 0 && expenses === 0 ? "No cashflow recorded this week yet" : "Inflow vs Outflow comparison"}</p>
           </div>
           <span class="hero-pill-badge" style="background:var(--accent-orange-dim); color:var(--accent-orange); border-color:rgba(255,87,34,0.2);">Live</span>
         </div>
@@ -409,8 +438,8 @@ function dashboard() {
           ${weekDays.map(d => `
             <div class="bar-column">
               <div class="bar-pair">
-                <div class="bar-pill income" style="height:${d.inc}%;" title="Inflow: ${d.inc}%"></div>
-                <div class="bar-pill expense" style="height:${d.exp}%;" title="Outflow: ${d.exp}%"></div>
+                <div class="bar-pill income" style="height:${d.inc > 0 ? Math.max(8, (d.inc / maxDayVal) * 100) : 4}%;" title="${d.date} Inflow: ${currency(d.inc)}"></div>
+                <div class="bar-pill expense" style="height:${d.exp > 0 ? Math.max(8, (d.exp / maxDayVal) * 100) : 4}%;" title="${d.date} Outflow: ${currency(d.exp)}"></div>
               </div>
               <span class="bar-day-label">${d.label}</span>
             </div>
@@ -456,10 +485,10 @@ function dashboard() {
    ========================================================================== */
 function invoices() {
   const q = searchText.toLowerCase();
-  const rows = [...data.invoices].filter(i => `${i.number} ${clientName(i.clientId)}`.toLowerCase().includes(q)).sort((a, b) => b.issueDate.localeCompare(a.issueDate));
-
+  const rows = [...data.invoices].filter(i => `${i.number} ${clientName(i.clientId)}`.toLowerCase().includes(q)).sort((a,b) => b.issueDate.localeCompare(a.issueDate));
+  
   return `
-    ${heading("Invoices", "Manage client billings, tracking balances and payment terms.", `
+    ${heading("Invoices", "Create invoices and keep track of what clients owe you.", `
       <button class="pill-btn pill-btn-neon" data-action="new-invoice">
         <span class="btn-icon">+</span>
         <span>New Invoice</span>
@@ -469,7 +498,7 @@ function invoices() {
     <div class="toolbar">
       <input class="search" data-search="invoices" value="${escape(searchText)}" placeholder="Search invoices, clients, numbers..." />
       <div class="toolbar-group">
-        <span class="help">${rows.length} invoice${rows.length === 1 ? "" : "s"} tracked</span>
+        <span class="help">${rows.length} invoice${rows.length === 1 ? "" : "s"}</span>
       </div>
     </div>
 
@@ -513,7 +542,7 @@ function invoices() {
    VIEW: PAYMENTS
    ========================================================================== */
 function payments() {
-  const rows = [...data.payments].sort((a, b) => b.date.localeCompare(a.date));
+  const rows = [...data.payments].sort((a,b) => b.date.localeCompare(a.date));
   const totalReceived = rows.reduce((s, p) => s + Number(p.amount), 0);
 
   return `
@@ -544,8 +573,8 @@ function payments() {
           </thead>
           <tbody>
             ${rows.map(p => {
-    const inv = data.invoices.find(i => i.id === p.invoiceId);
-    return `
+              const inv = data.invoices.find(i => i.id === p.invoiceId);
+              return `
                 <tr>
                   <td>${dateText(p.date)}</td>
                   <td class="primary-text">${escape(inv?.number || p.invoiceNumber || "—")}</td>
@@ -555,7 +584,7 @@ function payments() {
                   <td class="money positive">+${currency(p.amount)}</td>
                 </tr>
               `;
-  }).join("")}
+            }).join("")}
           </tbody>
         </table>
       ` : noRows("No payments recorded yet", "Record a deposit", "new-payment")}
@@ -567,11 +596,11 @@ function payments() {
    VIEW: EXPENSES
    ========================================================================== */
 function expenses() {
-  const rows = [...data.expenses].sort((a, b) => b.date.localeCompare(a.date));
-  const total = rows.reduce((s, e) => s + Number(e.amount), 0);
+  const rows = [...data.expenses].sort((a,b) => b.date.localeCompare(a.date));
+  const total = rows.reduce((s,e) => s + Number(e.amount), 0);
 
   return `
-    ${heading("Expenses", "Record business tools, cloud hosting, travel, and supplies.", `
+    ${heading("Expenses", "Track business spending, tools, equipment, and subscriptions.", `
       <button class="pill-btn pill-btn-neon" data-action="new-expense">
         <span class="btn-icon">+</span>
         <span>Add Expense</span>
@@ -616,10 +645,10 @@ function expenses() {
    VIEW: CLIENTS
    ========================================================================== */
 function clients() {
-  const rows = [...data.clients].sort((a, b) => a.name.localeCompare(b.name));
+  const rows = [...data.clients].sort((a,b) => a.name.localeCompare(b.name));
 
   return `
-    ${heading("Clients & Partners", "Manage contact information, GST numbers, and payment history.", `
+    ${heading("Clients & Partners", "Manage client contact information, GST numbers, and payment history.", `
       <button class="pill-btn pill-btn-neon" data-action="new-client">
         <span class="btn-icon">+</span>
         <span>Add Client</span>
@@ -640,8 +669,8 @@ function clients() {
           </thead>
           <tbody>
             ${rows.map(c => {
-    const outstanding = data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s, i) => s + balance(i), 0);
-    return `
+              const outstanding = data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s,i) => s + balance(i), 0);
+              return `
                 <tr>
                   <td>
                     <div class="primary-text">${escape(c.name)}</div>
@@ -658,7 +687,7 @@ function clients() {
                   </td>
                 </tr>
               `;
-  }).join("")}
+            }).join("")}
           </tbody>
         </table>
       ` : noRows("No clients yet", "Add your first client", "new-client")}
@@ -670,10 +699,10 @@ function clients() {
    VIEW: PROJECTS
    ========================================================================== */
 function projects() {
-  const rows = [...data.projects].sort((a, b) => a.name.localeCompare(b.name));
+  const rows = [...data.projects].sort((a,b) => a.name.localeCompare(b.name));
 
   return `
-    ${heading("Projects", "Organize client deliverables and invoice milestones.", `
+    ${heading("Projects", "Link client deliverables and milestone invoices.", `
       <button class="pill-btn pill-btn-neon" data-action="new-project">
         <span class="btn-icon">+</span>
         <span>Add Project</span>
@@ -715,23 +744,23 @@ function projects() {
    VIEW: REPORTS & ANALYTICS
    ========================================================================== */
 function reports() {
-  const months = [-5, -4, -3, -2, -1, 0].map(monthRange);
+  const months = [-5,-4,-3,-2,-1,0].map(monthRange);
   const values = months.map(m => ({
     ...m,
     income: paymentsInRange(m.start, m.end),
     expense: expensesInRange(m.start, m.end)
   }));
   const max = Math.max(1, ...values.flatMap(v => [v.income, v.expense]));
-  const received = values.reduce((s, v) => s + v.income, 0);
-  const spent = values.reduce((s, v) => s + v.expense, 0);
+  const received = values.reduce((s,v) => s + v.income, 0);
+  const spent = values.reduce((s,v) => s + v.expense, 0);
   const netSurplus = received - spent;
-  const unpaid = data.invoices.reduce((s, i) => s + balance(i), 0);
+  const unpaid = data.invoices.reduce((s,i) => s + balance(i), 0);
 
   const byClient = data.clients.map(c => ({
     name: c.name,
-    paid: data.invoices.filter(i => i.clientId === c.id).reduce((sum, i) => sum + paidAmount(i.id), 0),
-    due: data.invoices.filter(i => i.clientId === c.id).reduce((sum, i) => sum + balance(i), 0)
-  })).filter(x => x.paid || x.due).sort((a, b) => b.paid - a.paid);
+    paid: data.invoices.filter(i => i.clientId === c.id).reduce((sum,i) => sum + paidAmount(i.id), 0),
+    due: data.invoices.filter(i => i.clientId === c.id).reduce((sum,i) => sum + balance(i), 0)
+  })).filter(x => x.paid || x.due).sort((a,b) => b.paid - a.paid);
 
   return `
     ${heading("Financial Analytics", "Six-month cashflow velocity and client profitability.", `
@@ -774,8 +803,8 @@ function reports() {
           ${values.map(v => `
             <div class="bar-column">
               <div class="bar-pair">
-                <div class="bar-pill income" style="height:${Math.max(6, (v.income / max) * 100)}%;" title="${v.label} Received: ${currency(v.income)}"></div>
-                <div class="bar-pill expense" style="height:${Math.max(6, (v.expense / max) * 100)}%;" title="${v.label} Spent: ${currency(v.expense)}"></div>
+                <div class="bar-pill income" style="height:${v.income > 0 ? Math.max(6, (v.income / max) * 100) : 4}%;" title="${v.label} Received: ${currency(v.income)}"></div>
+                <div class="bar-pill expense" style="height:${v.expense > 0 ? Math.max(6, (v.expense / max) * 100) : 4}%;" title="${v.label} Spent: ${currency(v.expense)}"></div>
               </div>
               <span class="bar-day-label">${v.label}</span>
             </div>
@@ -801,7 +830,7 @@ function reports() {
                 <div class="secondary-text">${currency(c.due)} due</div>
               </div>
             </div>
-          `).join("") : noRows("No client revenue data yet")}
+          `).join("") : noRows("No client revenue data recorded yet")}
         </div>
       </article>
     </section>
@@ -814,7 +843,7 @@ function reports() {
 function settings() {
   const s = data.settings;
   return `
-    ${heading("Settings & Vault", "Manage your business details, offline backups, and demo state.")}
+    ${heading("Settings & Vault", "Manage your business details and local offline backups.")}
 
     <div class="grid-2">
       <article class="card panel">
@@ -837,15 +866,15 @@ function settings() {
             </div>
             <div class="field">
               <label>Next Invoice #</label>
-              <input name="nextInvoice" type="number" min="1" value="${Number(s.nextInvoice) || 1}" />
+              <input name="nextInvoice" type="number" min="1" value="${Number(s.nextInvoice)||1}" />
             </div>
             <div class="field">
               <label>Payment Terms</label>
               <select name="defaultDueDays">
-                <option value="7" ${s.defaultDueDays == 7 ? "selected" : ""}>7 days</option>
-                <option value="15" ${s.defaultDueDays == 15 ? "selected" : ""}>15 days</option>
-                <option value="30" ${s.defaultDueDays == 30 ? "selected" : ""}>30 days</option>
-                <option value="45" ${s.defaultDueDays == 45 ? "selected" : ""}>45 days</option>
+                <option value="7" ${s.defaultDueDays==7?"selected":""}>7 days</option>
+                <option value="15" ${s.defaultDueDays==15?"selected":""}>15 days</option>
+                <option value="30" ${s.defaultDueDays==30?"selected":""}>30 days</option>
+                <option value="45" ${s.defaultDueDays==45?"selected":""}>45 days</option>
               </select>
             </div>
           </div>
@@ -863,13 +892,6 @@ function settings() {
         <div class="settings-list">
           <div class="settings-row">
             <div>
-              <div class="primary-text">Demo Data Reset</div>
-              <p class="help">Populate realistic fintech transactions, clients, and charts.</p>
-            </div>
-            <button class="pill-btn pill-btn-white pill-btn-sm" data-action="load-demo">Load Demo</button>
-          </div>
-          <div class="settings-row">
-            <div>
               <div class="primary-text">Export Backup</div>
               <p class="help">Download your clients, invoices, and expenses as a private JSON file.</p>
             </div>
@@ -878,7 +900,7 @@ function settings() {
           <div class="settings-row">
             <div>
               <div class="primary-text">Import Backup</div>
-              <p class="help">Restore data from a previously downloaded JSON file.</p>
+              <p class="help">Restore your records from a previously downloaded JSON file.</p>
             </div>
             <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="import-backup">Import JSON</button>
           </div>
@@ -894,7 +916,7 @@ function settings() {
     </div>
 
     <p class="notice" style="margin-top:20px;">
-      🔒 <strong>Privacy Assurance:</strong> All your financial metrics and data stay strictly in this device's local storage. No server database is queried.
+      🔒 <strong>Privacy Assurance:</strong> All your financial metrics and data stay strictly in this device's local storage. Only you have access to add, edit, or delete records.
     </p>
   `;
 }
@@ -914,11 +936,11 @@ function closeModal() {
 }
 
 function optionClients(selected = "", blank = "Choose a client") {
-  return `<option value="">${blank}</option>${data.clients.map(c => `<option value="${c.id}" ${c.id === selected ? "selected" : ""}>${escape(c.name)}</option>`).join("")}`;
+  return `<option value="">${blank}</option>${data.clients.map(c => `<option value="${c.id}" ${c.id===selected?"selected":""}>${escape(c.name)}</option>`).join("")}`;
 }
 
 function optionProjects(selected = "") {
-  return `<option value="">No project</option>${data.projects.map(p => `<option value="${p.id}" ${p.id === selected ? "selected" : ""}>${escape(p.name)}</option>`).join("")}`;
+  return `<option value="">No project</option>${data.projects.map(p => `<option value="${p.id}" ${p.id===selected?"selected":""}>${escape(p.name)}</option>`).join("")}`;
 }
 
 function invoiceForm() {
@@ -963,7 +985,7 @@ function invoiceForm() {
         </div>
         <div class="field">
           <label>Due Date</label>
-          <input name="dueDate" type="date" value="${plusDays(Number(data.settings.defaultDueDays) || 15)}" required />
+          <input name="dueDate" type="date" value="${plusDays(Number(data.settings.defaultDueDays)||15)}" required />
         </div>
         <div class="field">
           <label>GST Rate <span class="help">optional</span></label>
@@ -1092,7 +1114,7 @@ function expenseForm() {
         </div>
         <div class="field full">
           <label>Description</label>
-          <input name="description" placeholder="E.g., Figma Professional Subscription" required />
+          <input name="description" placeholder="E.g., Cloud Hosting or Office Supplies" required />
         </div>
       </div>
       <div class="form-actions">
@@ -1111,7 +1133,7 @@ function clientFields(c = {}) {
     <div class="form-grid">
       <div class="field full">
         <label>Client Name / Entity</label>
-        <input name="name" value="${escape(c.name)}" placeholder="E.g. Amazon India" required />
+        <input name="name" value="${escape(c.name)}" placeholder="Company or Client Name" required />
       </div>
       <div class="field">
         <label>Email Address</label>
@@ -1173,9 +1195,9 @@ function projectForm(id = "") {
         <div class="field">
           <label>Status</label>
           <select name="status">
-            <option ${p.status === "Active" ? "selected" : ""}>Active</option>
-            <option ${p.status === "Completed" ? "selected" : ""}>Completed</option>
-            <option ${p.status === "On hold" ? "selected" : ""}>On hold</option>
+            <option ${p.status==="Active"?"selected":""}>Active</option>
+            <option ${p.status==="Completed"?"selected":""}>Completed</option>
+            <option ${p.status==="On hold"?"selected":""}>On hold</option>
           </select>
         </div>
         <div class="field full">
@@ -1197,8 +1219,8 @@ function projectForm(id = "") {
 function invoiceDetail(id) {
   const i = data.invoices.find(x => x.id === id);
   if (!i) return;
-  const payments = data.payments.filter(p => p.invoiceId === id).sort((a, b) => b.date.localeCompare(a.date));
-
+  const payments = data.payments.filter(p => p.invoiceId === id).sort((a,b) => b.date.localeCompare(a.date));
+  
   showModal(i.number, `
     <div class="form">
       <div class="invoice-summary">
@@ -1267,7 +1289,7 @@ function exportBackup() {
 function exportExpenses() {
   const csv = [
     "Date,Category,Description,Payment mode,Amount INR",
-    ...data.expenses.map(e => [e.date, e.category, e.description, e.mode, e.amount].map(v => `"${String(v || "").replaceAll('"', '""')}"`).join(","))
+    ...data.expenses.map(e => [e.date, e.category, e.description, e.mode, e.amount].map(v => `"${String(v||"").replaceAll('"','""')}"`).join(","))
   ].join("\n");
   download(`expenses-${today()}.csv`, csv, "text/csv");
 }
@@ -1278,7 +1300,7 @@ function exportReport() {
     `Generated: ${today()}`,
     "",
     "Invoice Number,Client,Invoice Total INR,Paid INR,Balance INR,Status",
-    ...data.invoices.map(i => [i.number, clientName(i.clientId), invoiceAmount(i), paidAmount(i.id), balance(i), invoiceStatus(i)].map(v => `"${String(v).replaceAll('"', '""')}"`).join(","))
+    ...data.invoices.map(i => [i.number, clientName(i.clientId), invoiceAmount(i), paidAmount(i.id), balance(i), invoiceStatus(i)].map(v => `"${String(v).replaceAll('"','""')}"`).join(","))
   ];
   download(`financial-summary-${today()}.csv`, lines.join("\n"), "text/csv");
 }
@@ -1308,12 +1330,6 @@ document.addEventListener("click", event => {
   else if (action === "edit-project") projectForm(id);
   else if (action === "invoice-detail") invoiceDetail(id);
   else if (action === "close-modal") closeModal();
-  else if (action === "load-demo") {
-    data = getInitialSeedData();
-    save();
-    render();
-    notify("Demo data reloaded with full chart history!");
-  }
   else if (action === "export-backup") exportBackup();
   else if (action === "import-backup") document.getElementById("import-file").click();
   else if (action === "export-expenses") exportExpenses();
@@ -1500,7 +1516,7 @@ window.addEventListener("hashchange", () => {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => { });
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
   });
 }
 

@@ -12,7 +12,7 @@
   <meta name="description"
     content="A warm, modern freelance financial dashboard with real-time graphs and offline privacy." />
   <script>
-    // Force immediate unregister and purge of stale service worker caches
+    // Force immediate purge of stale service worker caches and any leftover fake/demo data
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(regs) {
         for (var reg of regs) { reg.update(); }
@@ -21,10 +21,15 @@
     if ('caches' in window) {
       caches.keys().then(function(keys) {
         keys.forEach(function(k) {
-          if (k !== 'total-berries-v5') { caches.delete(k); }
+          if (k !== 'total-berries-v6') { caches.delete(k); }
         });
       });
     }
+    // Erase any mock data from previous versions
+    try {
+      localStorage.removeItem('freelance-ledger-v1');
+      localStorage.removeItem('total-berries-v2');
+    } catch(e) {}
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -33,7 +38,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=4.0" />
+  <link rel="stylesheet" href="styles.css?v=5.0" />
   <title>Total Berries · Freelance Ledger</title>
 </head>
 
@@ -53,11 +58,6 @@
     </div>
 
     <div class="top-actions">
-      <button class="pill-btn pill-btn-ghost btn-demo" data-action="load-demo"
-        title="Load sample transactions to preview charts">
-        <span class="btn-icon">⚡</span>
-        <span class="btn-text">Demo Data</span>
-      </button>
       <button class="pill-btn pill-btn-white" data-action="new-payment" title="Record client payment">
         <span class="btn-icon">↓</span>
         <span class="btn-text">Deposit</span>
@@ -254,7 +254,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <input id="import-file" type="file" accept="application/json" hidden />
 
-  <script src="app.js?v=4.0"></script>
+  <script src="app.js?v=5.0"></script>
 </body>
 
 </html>
