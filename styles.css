@@ -231,8 +231,8 @@
 }
 
 [data-theme="dark"] .brand-avatar {
-  background: #111726;
-  border-color: #1e293b;
+  background: var(--accent-orange-gradient);
+  box-shadow: 0 4px 14px var(--accent-orange-glow);
 }
 
 * {

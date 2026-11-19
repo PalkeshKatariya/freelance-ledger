@@ -35,7 +35,7 @@
     if ('caches' in window) {
       caches.keys().then(function (keys) {
         keys.forEach(function (k) {
-          if (k !== 'total-berries-v13') { caches.delete(k); }
+          if (k !== 'total-berries-v14') { caches.delete(k); }
         });
       });
     }
@@ -49,9 +49,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="manifest" href="manifest.webmanifest?v=14.0" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg?v=14.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=14.0" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=14.0" />
+  <link rel="shortcut icon" href="favicon.ico?v=14.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=14.0" />
   <link rel="stylesheet" href="styles.css?v=10.0" />
   <title>Total Berries · Freelance Ledger</title>
 </head>
@@ -61,8 +64,11 @@
   <header class="topbar">
     <div class="topbar-left">
       <a class="brand" href="#dashboard" aria-label="Dashboard home">
-        <div class="brand-avatar">
-          <span class="brand-emoji">💼</span>
+        <div class="brand-avatar" title="Total Berries">
+          <svg width="22" height="22" viewBox="0 0 128 128" fill="none">
+            <circle cx="64" cy="64" r="54" fill="#ffffff" />
+            <path fill="#0066ff" d="M72 40H52v9h8v9c-9 1-15 8-15 17 0 10 8 18 20 18 8 0 14-3 18-7l-6-7c-3 3-7 5-12 5-6 0-11-3-11-9 0-5 4-9 11-9h7V55h6V40zm-7 27v9h9V67H65z"/>
+          </svg>
         </div>
         <div class="brand-info">
           <span class="brand-name">Total Berries</span>

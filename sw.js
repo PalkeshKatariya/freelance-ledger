@@ -1,11 +1,15 @@
-const CACHE = "total-berries-v13";
+const CACHE = "total-berries-v14";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css?v=10.0",
   "./app.js?v=12.0",
-  "./manifest.webmanifest",
-  "./icon.svg"
+  "./manifest.webmanifest?v=14.0",
+  "./icon.svg?v=14.0",
+  "./favicon-32x32.png?v=14.0",
+  "./favicon-16x16.png?v=14.0",
+  "./favicon.ico?v=14.0",
+  "./apple-touch-icon.png?v=14.0"
 ];
 
 // Skip waiting immediately so this service worker replaces any older one instantly
