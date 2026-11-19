@@ -1,38 +1,40 @@
 :root {
-  /* Warm Sunset & Slate Palette (from Calfo reference) */
-  --bg-canvas: #f8f6f2;
+  /* Electric Blue & Cool Slate Fintech Palette (from reference mockup) */
+  --bg-canvas: #f6f8fc;
   --bg-card: #ffffff;
-  --bg-card-hover: #faf8f5;
-  --bg-elevated: #f1ede5;
-  --bg-elevated-hover: #e7e2d8;
-  --border-subtle: rgba(35, 45, 63, 0.06);
-  --border-card: #ece6dc;
-  --border-card-hover: #ded6c9;
+  --bg-card-hover: #f8fafc;
+  --bg-elevated: #eef2f6;
+  --bg-elevated-hover: #e2e8f0;
+  --border-subtle: rgba(15, 23, 42, 0.06);
+  --border-card: #e2e8f0;
+  --border-card-hover: #cbd5e1;
 
-  /* Radiant Sunset Orange (from Calfo hero cards & brand) */
-  --accent-orange: #ff5722;
-  --accent-orange-hover: #f04a14;
-  --accent-orange-glow: rgba(255, 87, 34, 0.32);
-  --accent-orange-dim: rgba(255, 87, 34, 0.12);
-  --accent-orange-gradient: linear-gradient(135deg, #ff5722 0%, #ff6f33 50%, #ff8843 100%);
+  /* Radiant Electric Blue (Primary Accent from reference screens) */
+  --accent-orange: #0066ff;
+  --accent-blue: #0066ff;
+  --accent-primary: #0066ff;
+  --accent-orange-hover: #0052cc;
+  --accent-orange-glow: rgba(0, 102, 255, 0.28);
+  --accent-orange-dim: rgba(0, 102, 255, 0.08);
+  --accent-orange-gradient: linear-gradient(135deg, #0052cc 0%, #0066ff 50%, #3b82f6 100%);
 
-  /* Contrast Deep Slate Navy (from Calfo CTA buttons) */
-  --accent-navy: #232d3f;
-  --accent-navy-hover: #192130;
+  /* Contrast Deep Midnight Slate */
+  --accent-navy: #0f172a;
+  --accent-navy-hover: #1e293b;
   --accent-white: #ffffff;
 
   /* Typography */
-  --text-primary: #19212d;
-  --text-secondary: #5f6b7c;
-  --text-muted: #8c9ba8;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
   --text-light: #ffffff;
-  --text-dark: #19212d;
+  --text-dark: #0f172a;
 
   /* Status Colors */
   --color-positive: #10b981;
   --color-positive-bg: rgba(16, 185, 129, 0.12);
-  --color-due: #ff7a38;
-  --color-due-bg: rgba(255, 122, 56, 0.14);
+  --color-due: #2563eb;
+  --color-due-bg: rgba(37, 99, 235, 0.12);
   --color-overdue: #ef4444;
   --color-overdue-bg: rgba(239, 68, 68, 0.12);
   --color-draft: #64748b;
@@ -44,9 +46,9 @@
   --radius-xl: 30px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 2px 8px rgba(35, 45, 63, 0.04);
-  --shadow-card: 0 8px 24px rgba(35, 45, 63, 0.05), 0 1px 3px rgba(35, 45, 63, 0.02);
-  --shadow-glow: 0 6px 20px rgba(255, 87, 34, 0.28);
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.02);
+  --shadow-glow: 0 6px 20px rgba(0, 102, 255, 0.28);
 
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-primary);
@@ -57,35 +59,37 @@
    FINTECH DARK MODE PALETTE
    ========================================================================== */
 [data-theme="dark"] {
-  --bg-canvas: #0c1017;
-  --bg-card: #151b23;
-  --bg-card-hover: #1c232d;
-  --bg-elevated: #1e2632;
-  --bg-elevated-hover: #263140;
+  --bg-canvas: #090d16;
+  --bg-card: #111726;
+  --bg-card-hover: #172033;
+  --bg-elevated: #1a2338;
+  --bg-elevated-hover: #222d47;
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-card: #273142;
-  --border-card-hover: #3d4a60;
+  --border-card: #1e293b;
+  --border-card-hover: #334155;
 
-  --accent-orange: #ff6838;
-  --accent-orange-hover: #ff7d52;
-  --accent-orange-glow: rgba(255, 104, 56, 0.4);
-  --accent-orange-dim: rgba(255, 104, 56, 0.2);
-  --accent-orange-gradient: linear-gradient(135deg, #d84315 0%, #ff5722 55%, #ff7043 100%);
+  --accent-orange: #2563eb;
+  --accent-blue: #2563eb;
+  --accent-primary: #2563eb;
+  --accent-orange-hover: #3b82f6;
+  --accent-orange-glow: rgba(37, 99, 235, 0.38);
+  --accent-orange-dim: rgba(37, 99, 235, 0.18);
+  --accent-orange-gradient: linear-gradient(135deg, #0f275e 0%, #1d4ed8 60%, #2563eb 100%);
 
-  --accent-navy: #080b0f;
-  --accent-navy-hover: #040608;
+  --accent-navy: #06090f;
+  --accent-navy-hover: #0c121e;
   --accent-white: #ffffff;
 
-  --text-primary: #f0f6fc;
+  --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
   --text-light: #ffffff;
-  --text-dark: #0c1017;
+  --text-dark: #090d16;
 
   --color-positive: #34d399;
   --color-positive-bg: rgba(52, 211, 153, 0.16);
-  --color-due: #fb923c;
-  --color-due-bg: rgba(251, 146, 60, 0.16);
+  --color-due: #60a5fa;
+  --color-due-bg: rgba(96, 165, 250, 0.16);
   --color-overdue: #f87171;
   --color-overdue-bg: rgba(248, 113, 113, 0.16);
   --color-draft: #94a3b8;
@@ -93,75 +97,75 @@
 
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-glow: 0 6px 20px rgba(255, 87, 34, 0.35);
+  --shadow-glow: 0 6px 20px rgba(37, 99, 235, 0.35);
 }
 
 /* Dark Mode Component Overrides */
 [data-theme="dark"] input,
 [data-theme="dark"] select,
 [data-theme="dark"] textarea {
-  background: #0c1017;
-  color: #f0f6fc;
-  border-color: #273142;
+  background: #090d16;
+  color: #f8fafc;
+  border-color: #1e293b;
 }
 
 [data-theme="dark"] input:focus,
 [data-theme="dark"] select:focus,
 [data-theme="dark"] textarea:focus {
-  background: #151b23;
+  background: #111726;
   border-color: var(--accent-orange);
 }
 
 [data-theme="dark"] .search {
-  background: #0c1017;
-  color: #f0f6fc;
-  border-color: #273142;
+  background: #090d16;
+  color: #f8fafc;
+  border-color: #1e293b;
 }
 
 [data-theme="dark"] .search:focus {
-  background: #151b23;
+  background: #111726;
   border-color: var(--accent-orange);
 }
 
 [data-theme="dark"] .topbar {
-  background: rgba(12, 16, 23, 0.92);
-  border-bottom-color: #273142;
+  background: rgba(9, 13, 22, 0.92);
+  border-bottom-color: #1e293b;
 }
 
 [data-theme="dark"] .sidebar {
-  background: #151b23;
-  border-right-color: #273142;
+  background: #111726;
+  border-right-color: #1e293b;
 }
 
 [data-theme="dark"] .sidebar-nav a:hover {
-  background: #1c232d;
-  color: #f0f6fc;
+  background: #172033;
+  color: #f8fafc;
 }
 
 [data-theme="dark"] .sidebar-nav a.active {
-  background: rgba(255, 104, 56, 0.16);
-  color: var(--accent-orange);
+  background: rgba(37, 99, 235, 0.16);
+  color: #60a5fa;
 }
 
 [data-theme="dark"] .storage-card {
-  background: #0c1017;
-  border-color: #273142;
+  background: #090d16;
+  border-color: #1e293b;
 }
 
 [data-theme="dark"] th {
-  background: #1e2632;
-  border-bottom-color: #273142;
+  background: #1a2338;
+  border-bottom-color: #1e293b;
   color: #94a3b8;
 }
 
 [data-theme="dark"] td {
-  border-top-color: #212632;
+  border-top-color: #1e293b;
 }
 
 [data-theme="dark"] .pill-btn-ghost {
   background: rgba(255, 255, 255, 0.08);
-  color: #f0f6fc;
-  border-color: #273142;
+  color: #f8fafc;
+  border-color: #1e293b;
 }
 
 [data-theme="dark"] .pill-btn-ghost:hover {
@@ -169,51 +173,51 @@
 }
 
 [data-theme="dark"] .pill-btn-white:not(.hero-actions .pill-btn-white):not(.featured-card-orange .pill-btn-white) {
-  background: #1e2632;
-  color: #f0f6fc;
-  border-color: #273142;
+  background: #1a2338;
+  color: #f8fafc;
+  border-color: #1e293b;
 }
 
 [data-theme="dark"] .pill-btn-white:not(.hero-actions .pill-btn-white):not(.featured-card-orange .pill-btn-white):hover {
-  background: #263140;
+  background: #222d47;
 }
 
 [data-theme="dark"] .modal {
-  background: #151b23;
-  border-color: #273142;
+  background: #111726;
+  border-color: #1e293b;
 }
 
 [data-theme="dark"] .modal-header {
-  border-bottom-color: #273142;
+  border-bottom-color: #1e293b;
 }
 
 [data-theme="dark"] .modal-backdrop {
-  background: rgba(5, 8, 12, 0.7);
+  background: rgba(4, 7, 12, 0.75);
 }
 
 [data-theme="dark"] .notice {
-  background: rgba(255, 104, 56, 0.12);
-  border-color: rgba(255, 104, 56, 0.28);
-  color: #ff8a65;
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.28);
+  color: #60a5fa;
 }
 
 [data-theme="dark"] .auth-status-card {
-  background: rgba(255, 104, 56, 0.1);
-  border-color: rgba(255, 104, 56, 0.25);
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.25);
 }
 
 [data-theme="dark"] .auth-tabs {
-  background: #0c1017;
-  border-color: #273142;
+  background: #090d16;
+  border-color: #1e293b;
 }
 
 [data-theme="dark"] .auth-tab-btn.active {
-  background: #1e2632;
-  color: var(--accent-orange);
+  background: #1a2338;
+  color: #60a5fa;
 }
 
 [data-theme="dark"] .mobile-nav-capsule {
-  background: rgba(21, 27, 35, 0.95);
+  background: rgba(17, 23, 38, 0.95);
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
@@ -227,8 +231,8 @@
 }
 
 [data-theme="dark"] .brand-avatar {
-  background: #1e2632;
-  border-color: #273142;
+  background: #111726;
+  border-color: #1e293b;
 }
 
 * {
@@ -1632,7 +1636,7 @@ input, select, textarea {
   border-radius: var(--radius-md);
   padding: 10px 14px;
   color: var(--text-primary);
-  background: #faf9f6;
+  background: #f8fafc;
   outline: none;
   font-size: 13.5px;
   transition: all 0.18s ease;
@@ -1673,9 +1677,9 @@ textarea {
 }
 
 .notice {
-  background: #fff6f0;
-  border: 1px solid #ffd4bd;
-  color: #c2410c;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
   padding: 12px 14px;
   border-radius: var(--radius-md);
   font-size: 13px;
@@ -1800,8 +1804,8 @@ textarea {
 }
 
 .auth-status-card {
-  background: #fff8f5;
-  border: 1px solid #ffd8c4;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
   border-radius: var(--radius-md);
   padding: 16px;
   margin-bottom: 20px;

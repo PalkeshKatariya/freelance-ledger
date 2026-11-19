@@ -7,10 +7,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta name="theme-color" content="#ff5722" />
+  <meta name="theme-color" content="#0066ff" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="description"
-    content="A warm, modern freelance financial dashboard with real-time graphs and offline privacy." />
+    content="An electric blue, modern freelance financial dashboard with real-time graphs and offline privacy." />
   <script>
     // Immediate dark mode application before paint
     var _theme = localStorage.getItem('theme');
@@ -18,7 +18,7 @@
       try {
         var _d = JSON.parse(localStorage.getItem('total-berries-clean-v1') || '{}');
         _theme = _d?.settings?.theme;
-      } catch(e) {}
+      } catch (e) { }
     }
     if (_theme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -35,7 +35,7 @@
     if ('caches' in window) {
       caches.keys().then(function (keys) {
         keys.forEach(function (k) {
-          if (k !== 'total-berries-v12') { caches.delete(k); }
+          if (k !== 'total-berries-v13') { caches.delete(k); }
         });
       });
     }
@@ -52,7 +52,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=9.0" />
+  <link rel="stylesheet" href="styles.css?v=10.0" />
   <title>Total Berries · Freelance Ledger</title>
 </head>
 
@@ -274,7 +274,7 @@
   <input id="import-file" type="file" accept="application/json" hidden />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=11.0"></script>
+  <script src="app.js?v=12.0"></script>
 </body>
 
 </html>

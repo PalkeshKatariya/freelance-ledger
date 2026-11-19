@@ -33,7 +33,7 @@ function applyTheme(theme) {
   }
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", t === "dark" ? "#0c1017" : "#ff5722");
+    meta.setAttribute("content", t === "dark" ? "#090d16" : "#0066ff");
   }
 }
 
@@ -420,7 +420,7 @@ function sparklineSvg(points = [], isPositive = true, width = 64, height = 26) {
     const y = (height - 4 - ((p - min) / range) * (height - 8)).toFixed(1);
     return `${x},${y}`;
   });
-  const strokeColor = isPositive ? "#ff5722" : "#8c9ba8";
+  const strokeColor = isPositive ? "#0066ff" : "#94a3b8";
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
     <polyline points="${coords.join(" ")}" fill="none" stroke="${strokeColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
@@ -723,7 +723,7 @@ function dashboard() {
             <h2>Weekly Cashflow</h2>
             <p class="subtitle">${income === 0 && expenses === 0 ? "No cashflow recorded this week yet" : "Inflow vs Outflow comparison"}</p>
           </div>
-          <span class="hero-pill-badge" style="background:var(--accent-orange-dim); color:var(--accent-orange); border-color:rgba(255,87,34,0.2);">Live</span>
+          <span class="hero-pill-badge" style="background:var(--accent-orange-dim); color:var(--accent-orange); border-color:rgba(0,102,255,0.2);">Live</span>
         </div>
 
         <div class="bar-chart-wrap">
@@ -754,7 +754,7 @@ function dashboard() {
           ${due.length ? due.map(i => `
             <div class="list-row clickable" data-action="invoice-detail" data-id="${i.id}">
               <div style="display:flex; align-items:center; gap:12px;">
-                <div class="hero-badge-icon" style="width:36px; height:36px; font-size:16px; background:#fff1eb; color:#ff5722; border:1px solid #ffd8c4;">📄</div>
+                <div class="hero-badge-icon" style="width:36px; height:36px; font-size:16px; background:#eff6ff; color:#0066ff; border:1px solid #bfdbfe;">📄</div>
                 <div>
                   <div class="primary-text">${escape(i.number)}</div>
                   <div class="secondary-text">${escape(clientName(i.clientId))} &middot; Due ${dateText(i.dueDate)}</div>
