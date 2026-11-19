@@ -806,6 +806,7 @@ function invoices() {
               <th>Due</th>
               <th>Status</th>
               <th class="money">Balance Due</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -822,6 +823,10 @@ function invoices() {
                 <td>${dateText(i.dueDate)}</td>
                 <td>${statusPill(invoiceStatus(i))}</td>
                 <td class="money">${currency(balance(i))}</td>
+                <td style="text-align:right; white-space:nowrap;" onclick="event.stopPropagation()">
+                  <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-invoice" data-id="${i.id}">Edit</button>
+                  <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="print-invoice" data-id="${i.id}">🖨️</button>
+                </td>
               </tr>
             `).join("")}
           </tbody>
@@ -845,7 +850,10 @@ function invoices() {
             </div>
             <div class="imc-bottom">
               <span class="imc-due">📅 Due ${dateText(i.dueDate)}</span>
-              <span class="imc-issued">Issued ${dateText(i.issueDate)}</span>
+              <div style="display:flex; gap:6px;" onclick="event.stopPropagation()">
+                <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-invoice" data-id="${i.id}">Edit</button>
+                <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="print-invoice" data-id="${i.id}">🖨️</button>
+              </div>
             </div>
           </article>
         `).join("")}
@@ -1013,10 +1021,16 @@ function clients() {
 
   return `
     ${heading("Clients & Partners", "Manage client contact information, GST numbers, and payment history.", `
-      <button class="pill-btn pill-btn-neon" data-action="new-client">
-        <span class="btn-icon">+</span>
-        <span>Add Client</span>
-      </button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="pill-btn pill-btn-ghost" data-action="client-ledger" title="Print Ledger for any client">
+          <span class="btn-icon">🖨️</span>
+          <span>Client Ledger</span>
+        </button>
+        <button class="pill-btn pill-btn-neon" data-action="new-client">
+          <span class="btn-icon">+</span>
+          <span>Add Client</span>
+        </button>
+      </div>
     `)}
 
     ${rows.length ? `
@@ -1047,7 +1061,8 @@ function clients() {
                   </td>
                   <td>${escape(c.gstin || "—")}</td>
                   <td class="money">${currency(outstanding)}</td>
-                  <td style="text-align:right;">
+                  <td style="text-align:right; white-space:nowrap;">
+                    <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="client-ledger" data-id="${c.id}" title="View and print statement">🖨️ Ledger</button>
                     <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-client" data-id="${c.id}">Edit</button>
                   </td>
                 </tr>
@@ -1075,7 +1090,10 @@ function clients() {
               </div>
               <div class="imc-bottom">
                 <span>GST: ${escape(c.gstin || "—")}</span>
-                <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-client" data-id="${c.id}">Edit</button>
+                <div style="display:flex; gap:6px;">
+                  <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="client-ledger" data-id="${c.id}">🖨️ Ledger</button>
+                  <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-client" data-id="${c.id}">Edit</button>
+                </div>
               </div>
             </article>
           `;
@@ -1342,15 +1360,21 @@ function settings() {
 /* ==========================================================================
    MODAL DIALOGS & FORMS
    ========================================================================== */
-function showModal(title, content) {
+function showModal(title, content, isLarge = false) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-content").innerHTML = content;
+  const modalEl = document.querySelector(".modal");
+  if (modalEl) {
+    if (isLarge) modalEl.classList.add("modal-lg");
+    else modalEl.classList.remove("modal-lg");
+  }
   document.getElementById("modal-backdrop").hidden = false;
   setTimeout(() => document.querySelector("#modal-content input, #modal-content select")?.focus(), 25);
 }
 
 function closeModal() {
   document.getElementById("modal-backdrop").hidden = true;
+  document.querySelector(".modal")?.classList.remove("modal-lg");
 }
 
 function optionClients(selected = "", blank = "Choose a client") {
@@ -1361,7 +1385,7 @@ function optionProjects(selected = "") {
   return `<option value="">No project</option>${data.projects.map(p => `<option value="${p.id}" ${p.id===selected?"selected":""}>${escape(p.name)}</option>`).join("")}`;
 }
 
-function invoiceForm() {
+function invoiceForm(id = "") {
   if (!data.clients.length) {
     showModal("Add a client first", `
       <form class="form" id="client-form">
@@ -1378,58 +1402,64 @@ function invoiceForm() {
     `);
     return;
   }
-  showModal("Create Invoice", `
-    <form class="form" id="invoice-form">
+
+  const isEdit = Boolean(id);
+  const inv = isEdit ? (data.invoices.find(x => x.id === id) || {}) : {};
+  const currentGst = isEdit ? Number(inv.gstRate ?? 18) : 18;
+
+  showModal(isEdit ? `Edit Invoice · ${escape(inv.number)}` : "Create Invoice", `
+    <form class="form" id="invoice-form" data-id="${escape(id)}">
+      ${isEdit ? `<input type="hidden" name="invoiceId" value="${escape(id)}" />` : ""}
       <div class="form-grid">
         <div class="field">
           <label>Invoice Number</label>
-          <input name="number" value="${escape(invoiceNumber())}" required />
+          <input name="number" value="${escape(isEdit ? inv.number : invoiceNumber())}" required />
         </div>
         <div class="field">
           <label>Client</label>
-          <select name="clientId" required>${optionClients()}</select>
+          <select name="clientId" required>${optionClients(inv.clientId)}</select>
         </div>
         <div class="field">
           <label>Project <span class="help">optional</span></label>
-          <select name="projectId">${optionProjects()}</select>
+          <select name="projectId">${optionProjects(inv.projectId)}</select>
         </div>
         <div class="field">
           <label>Amount before GST (INR)</label>
-          <input name="amount" type="number" min="0" step="0.01" placeholder="0.00" required />
+          <input name="amount" type="number" min="0" step="0.01" placeholder="0.00" value="${inv.amount !== undefined ? inv.amount : ""}" required />
         </div>
         <div class="field">
           <label>Invoice Date</label>
-          <input name="issueDate" type="date" value="${today()}" required />
+          <input name="issueDate" type="date" value="${inv.issueDate || today()}" required />
         </div>
         <div class="field">
           <label>Due Date</label>
-          <input name="dueDate" type="date" value="${plusDays(Number(data.settings.defaultDueDays)||15)}" required />
+          <input name="dueDate" type="date" value="${inv.dueDate || plusDays(Number(data.settings.defaultDueDays)||15)}" required />
         </div>
         <div class="field">
           <label>GST Rate <span class="help">optional</span></label>
           <select name="gstRate">
-            <option value="0">No GST (0%)</option>
-            <option value="5">5%</option>
-            <option value="12">12%</option>
-            <option value="18" selected>18%</option>
-            <option value="28">28%</option>
+            <option value="0" ${currentGst === 0 ? "selected" : ""}>No GST (0%)</option>
+            <option value="5" ${currentGst === 5 ? "selected" : ""}>5%</option>
+            <option value="12" ${currentGst === 12 ? "selected" : ""}>12%</option>
+            <option value="18" ${currentGst === 18 ? "selected" : ""}>18%</option>
+            <option value="28" ${currentGst === 28 ? "selected" : ""}>28%</option>
           </select>
         </div>
         <div class="field">
           <label>Reference / PO #</label>
-          <input name="reference" placeholder="PO number or note" />
+          <input name="reference" value="${escape(inv.reference || "")}" placeholder="PO number or note" />
         </div>
         <div class="field full">
           <label>Project Scope & Notes</label>
-          <textarea name="notes" placeholder="Deliverables, scope notes, or payment instructions"></textarea>
+          <textarea name="notes" placeholder="Deliverables, scope notes, or payment instructions">${escape(inv.notes || "")}</textarea>
         </div>
       </div>
       <div class="form-actions">
-        <span></span>
+        ${isEdit ? `<button type="button" class="pill-btn pill-btn-danger" data-action="delete-invoice" data-id="${id}">Delete</button>` : "<span></span>"}
         <div class="form-actions-right">
           <button type="button" class="pill-btn pill-btn-ghost" data-action="close-modal">Cancel</button>
-          <button class="pill-btn pill-btn-white" name="draft" value="1">Save Draft</button>
-          <button class="pill-btn pill-btn-neon">Issue Invoice</button>
+          ${!isEdit ? `<button class="pill-btn pill-btn-white" name="draft" value="1">Save Draft</button>` : (inv.draft ? `<button class="pill-btn pill-btn-white" name="draft" value="1">Keep as Draft</button>` : "")}
+          <button class="pill-btn pill-btn-neon">${isEdit ? "Save Changes" : "Issue Invoice"}</button>
         </div>
       </div>
     </form>
@@ -1677,9 +1707,10 @@ function invoiceDetail(id) {
       </div>
 
       <div class="form-actions">
-        <button class="pill-btn pill-btn-danger" data-action="delete-invoice" data-id="${i.id}">Delete Invoice</button>
+        <button class="pill-btn pill-btn-danger" data-action="delete-invoice" data-id="${i.id}">Delete</button>
         <div class="form-actions-right">
-          <button class="pill-btn pill-btn-ghost" data-action="print">Print</button>
+          <button class="pill-btn pill-btn-ghost" data-action="edit-invoice" data-id="${i.id}">✏️ Edit</button>
+          <button class="pill-btn pill-btn-ghost" data-action="print-invoice" data-id="${i.id}">🖨️ Print</button>
           <button class="pill-btn pill-btn-neon" data-action="close-modal">Done</button>
         </div>
       </div>
@@ -1724,6 +1755,466 @@ function exportReport() {
 }
 
 /* ==========================================================================
+   CLIENT LEDGER & ADVANCED PRINT ENGINE
+   ========================================================================== */
+function getLedgerData(clientId, startDate = "", endDate = "") {
+  const client = data.clients.find(c => c.id === clientId) || data.clients[0];
+  if (!client) return null;
+
+  const invs = data.invoices.filter(i => i.clientId === client.id && !i.draft);
+  const invIds = new Set(invs.map(i => i.id));
+  const pmts = data.payments.filter(p => invIds.has(p.invoiceId));
+
+  const allTx = [];
+  invs.forEach(i => {
+    allTx.push({
+      id: i.id,
+      date: i.issueDate,
+      type: "INVOICE",
+      number: i.number,
+      particulars: `Invoice ${i.number}${i.notes ? ` &middot; ${escape(i.notes)}` : ""}`,
+      reference: i.reference || "—",
+      debit: invoiceAmount(i),
+      credit: 0
+    });
+  });
+
+  pmts.forEach(p => {
+    allTx.push({
+      id: p.id,
+      date: p.date,
+      type: "PAYMENT",
+      number: p.invoiceNumber || "",
+      particulars: `Deposit / Payment for ${escape(p.invoiceNumber || "Invoice")} (${escape(p.mode)})`,
+      reference: p.reference || escape(p.mode) || "—",
+      debit: 0,
+      credit: Number(p.amount)
+    });
+  });
+
+  allTx.sort((a,b) => a.date.localeCompare(b.date) || (a.type === "INVOICE" ? -1 : 1));
+
+  let openingBalance = 0;
+  const periodTx = [];
+
+  allTx.forEach(t => {
+    if (startDate && t.date < startDate) {
+      openingBalance += (t.debit - t.credit);
+    } else if (!endDate || t.date <= endDate) {
+      periodTx.push(t);
+    }
+  });
+
+  let running = openingBalance;
+  let totalPeriodBilled = 0;
+  let totalPeriodPaid = 0;
+
+  periodTx.forEach(t => {
+    running += (t.debit - t.credit);
+    t.runningBalance = running;
+    totalPeriodBilled += t.debit;
+    totalPeriodPaid += t.credit;
+  });
+
+  const closingBalance = running;
+  const totalLifetimeOutstanding = invs.reduce((s,i) => s + balance(i), 0);
+
+  return {
+    client,
+    startDate,
+    endDate,
+    openingBalance,
+    periodTx,
+    totalPeriodBilled,
+    totalPeriodPaid,
+    closingBalance,
+    totalLifetimeOutstanding
+  };
+}
+
+function clientLedger(clientId = "", startDate = "", endDate = "", activePreset = "all") {
+  if (!data.clients.length) {
+    notify("Please add a client first.");
+    return;
+  }
+  clientId = clientId || data.clients[0].id;
+
+  const now = new Date();
+  if (activePreset === "this-month") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+  } else if (activePreset === "last-month") {
+    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
+    endDate = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
+  } else if (activePreset === "this-quarter") {
+    const qMonth = Math.floor(now.getMonth() / 3) * 3;
+    startDate = new Date(now.getFullYear(), qMonth, 1).toISOString().slice(0, 10);
+    endDate = new Date(now.getFullYear(), qMonth + 3, 0).toISOString().slice(0, 10);
+  } else if (activePreset === "fy") {
+    const fyYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+    startDate = `${fyYear}-04-01`;
+    endDate = `${fyYear + 1}-03-31`;
+  } else if (activePreset === "all") {
+    startDate = "";
+    endDate = "";
+  }
+
+  const ledger = getLedgerData(clientId, startDate, endDate);
+  if (!ledger) return;
+
+  const { client, openingBalance, periodTx, totalPeriodBilled, totalPeriodPaid, closingBalance } = ledger;
+
+  showModal(`Client Ledger · ${escape(client.name)}`, `
+    <div class="form" style="padding-top:16px;">
+      <!-- Filters and Controls -->
+      <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:flex-end; margin-bottom:14px;">
+        <div style="flex:1; min-width:200px;">
+          <label style="font-size:11.5px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; display:block; margin-bottom:4px;">Client Account</label>
+          <select id="ledger-client-select" data-action="change-ledger-client" style="width:100%; height:40px;">
+            ${data.clients.map(c => `<option value="${c.id}" ${c.id === clientId ? "selected" : ""}>${escape(c.name)}</option>`).join("")}
+          </select>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <button type="button" class="date-preset-pill ${activePreset === 'all' ? 'active' : ''}" data-action="ledger-preset" data-preset="all" data-id="${clientId}">All Time</button>
+          <button type="button" class="date-preset-pill ${activePreset === 'this-month' ? 'active' : ''}" data-action="ledger-preset" data-preset="this-month" data-id="${clientId}">This Month</button>
+          <button type="button" class="date-preset-pill ${activePreset === 'last-month' ? 'active' : ''}" data-action="ledger-preset" data-preset="last-month" data-id="${clientId}">Last Month</button>
+          <button type="button" class="date-preset-pill ${activePreset === 'this-quarter' ? 'active' : ''}" data-action="ledger-preset" data-preset="this-quarter" data-id="${clientId}">This Quarter</button>
+          <button type="button" class="date-preset-pill ${activePreset === 'fy' ? 'active' : ''}" data-action="ledger-preset" data-preset="fy" data-id="${clientId}">This FY</button>
+        </div>
+      </div>
+
+      <!-- Custom Date Duration Selection -->
+      <div style="background:var(--bg-canvas); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:12px; font-weight:700; color:var(--text-secondary);">Duration:</span>
+        <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:240px;">
+          <input type="date" id="ledger-start" value="${startDate || ""}" style="flex:1; height:36px; padding:4px 8px; font-size:12.5px;" />
+          <span style="color:var(--text-muted); font-size:12px;">to</span>
+          <input type="date" id="ledger-end" value="${endDate || ""}" style="flex:1; height:36px; padding:4px 8px; font-size:12.5px;" />
+        </div>
+        <button type="button" class="pill-btn pill-btn-ghost pill-btn-sm" data-action="apply-ledger-dates" data-id="${clientId}" style="height:36px;">Filter Range</button>
+      </div>
+
+      <!-- Financial KPI Summary Bar -->
+      <div class="ledger-kpi-grid">
+        <div class="ledger-kpi-card">
+          <div class="ledger-kpi-label">Opening Balance</div>
+          <div class="ledger-kpi-val">${currency(openingBalance)}</div>
+        </div>
+        <div class="ledger-kpi-card">
+          <div class="ledger-kpi-label">Billed in Period</div>
+          <div class="ledger-kpi-val" style="color:var(--text-primary);">${currency(totalPeriodBilled)}</div>
+        </div>
+        <div class="ledger-kpi-card">
+          <div class="ledger-kpi-label">Received in Period</div>
+          <div class="ledger-kpi-val" style="color:var(--color-positive);">${currency(totalPeriodPaid)}</div>
+        </div>
+        <div class="ledger-kpi-card" style="border-color:rgba(0,102,255,0.3); background:var(--accent-orange-dim);">
+          <div class="ledger-kpi-label" style="color:var(--accent-orange);">Net Due / Balance</div>
+          <div class="ledger-kpi-val" style="color:var(--accent-orange);">${currency(closingBalance)}</div>
+        </div>
+      </div>
+
+      <!-- Transactions Preview Table -->
+      <div class="table-wrap" style="max-height:300px; overflow-y:auto; border:1px solid var(--border-card); border-radius:var(--radius-md); margin-bottom:18px;">
+        <table style="font-size:12.5px; width:100%; border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="padding:8px 10px;">Date</th>
+              <th style="padding:8px 10px;">Particulars</th>
+              <th style="padding:8px 10px;">Ref #</th>
+              <th class="money" style="padding:8px 10px;">Billed (Dr)</th>
+              <th class="money" style="padding:8px 10px;">Received (Cr)</th>
+              <th class="money" style="padding:8px 10px;">Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${startDate ? `
+              <tr style="background:var(--bg-canvas); font-style:italic;">
+                <td style="padding:7px 10px; color:var(--text-muted);">${dateText(startDate)}</td>
+                <td style="padding:7px 10px;" colspan="2"><em>Opening Balance</em></td>
+                <td class="money" style="padding:7px 10px;">—</td>
+                <td class="money" style="padding:7px 10px;">—</td>
+                <td class="money" style="padding:7px 10px; font-weight:700;">${currency(openingBalance)}</td>
+              </tr>
+            ` : ""}
+            ${periodTx.length ? periodTx.map(t => `
+              <tr>
+                <td style="padding:7px 10px; white-space:nowrap;">${dateText(t.date)}</td>
+                <td style="padding:7px 10px;">
+                  <div style="font-weight:600; color:var(--text-primary);">${t.particulars}</div>
+                </td>
+                <td style="padding:7px 10px; color:var(--text-secondary);">${escape(t.reference)}</td>
+                <td class="money" style="padding:7px 10px; color:${t.debit > 0 ? "var(--text-primary)" : "var(--text-muted)"};">${t.debit > 0 ? currency(t.debit) : "—"}</td>
+                <td class="money" style="padding:7px 10px; color:${t.credit > 0 ? "var(--color-positive)" : "var(--text-muted)"};">${t.credit > 0 ? currency(t.credit) : "—"}</td>
+                <td class="money" style="padding:7px 10px; font-weight:700; color:${t.runningBalance > 0 ? "var(--color-due)" : "var(--text-primary)"};">${currency(t.runningBalance)}</td>
+              </tr>
+            `).join("") : `
+              <tr>
+                <td colspan="6" style="padding:24px 10px; text-align:center; color:var(--text-muted);">
+                  No transactions recorded for this client in the selected duration.
+                </td>
+              </tr>
+            `}
+          </tbody>
+          <tfoot>
+            <tr style="font-weight:800; background:var(--bg-canvas); border-top:2px solid var(--border-card);">
+              <td colspan="3" style="padding:10px;">Closing Balance</td>
+              <td class="money" style="padding:10px;">${currency(totalPeriodBilled)}</td>
+              <td class="money" style="padding:10px; color:var(--color-positive);">${currency(totalPeriodPaid)}</td>
+              <td class="money" style="padding:10px; color:var(--accent-orange); font-size:14px;">${currency(closingBalance)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="form-actions">
+        <button type="button" class="pill-btn pill-btn-ghost" data-action="close-modal">Close</button>
+        <div class="form-actions-right">
+          <button type="button" class="pill-btn pill-btn-neon" data-action="print-client-ledger" data-id="${clientId}" data-start="${startDate || ""}" data-end="${endDate || ""}">
+            <span class="btn-icon">🖨️</span>
+            <span>Print Ledger</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `, true);
+}
+
+function printClientLedger(clientId, startDate, endDate) {
+  const ledger = getLedgerData(clientId, startDate, endDate);
+  if (!ledger) return;
+
+  const { client, openingBalance, periodTx, totalPeriodBilled, totalPeriodPaid, closingBalance } = ledger;
+
+  const printArea = document.getElementById("print-area");
+  if (!printArea) return;
+
+  const durationText = (startDate || endDate) 
+    ? `${startDate ? dateText(startDate) : "Inception"} to ${endDate ? dateText(endDate) : dateText(today())}`
+    : "All Recorded Transactions";
+
+  printArea.innerHTML = `
+    <div class="print-statement">
+      <div class="statement-header">
+        <div class="statement-brand">
+          <h1>${escape(data.settings.businessName || "Total Berries")}</h1>
+          <p style="margin:2px 0; color:#475569; font-weight:600;">Freelance Ledger &middot; Client Statement of Account</p>
+          ${data.settings.gstin ? `<p style="margin:2px 0; color:#64748b; font-size:11px;">GSTIN: ${escape(data.settings.gstin)}</p>` : ""}
+        </div>
+        <div class="statement-meta">
+          <h2>STATEMENT OF ACCOUNT</h2>
+          <p style="margin:2px 0;"><strong>Date:</strong> ${dateText(today())}</p>
+          <p style="margin:2px 0;"><strong>Duration:</strong> ${durationText}</p>
+        </div>
+      </div>
+
+      <div class="statement-parties">
+        <div class="party-box">
+          <div class="party-title">CLIENT ACCOUNT DETAILS</div>
+          <div class="party-name">${escape(client.name)}</div>
+          ${client.contact ? `<div style="font-size:12px; margin-top:2px;"><strong>Attn:</strong> ${escape(client.contact)}</div>` : ""}
+          ${client.email ? `<div style="font-size:12px; color:#475569;">${escape(client.email)}</div>` : ""}
+          ${client.phone ? `<div style="font-size:12px; color:#475569;">${escape(client.phone)}</div>` : ""}
+          ${client.address ? `<div style="font-size:11px; margin-top:4px; color:#64748b;">${escape(client.address)}</div>` : ""}
+          ${client.gstin ? `<div style="font-size:11px; margin-top:4px; font-weight:600;">GSTIN: ${escape(client.gstin)}</div>` : ""}
+        </div>
+        <div class="statement-summary-box">
+          <div class="summary-line"><span>Opening Balance:</span> <strong>${currency(openingBalance)}</strong></div>
+          <div class="summary-line"><span>Total Billed:</span> <strong>${currency(totalPeriodBilled)}</strong></div>
+          <div class="summary-line"><span>Total Received:</span> <strong>${currency(totalPeriodPaid)}</strong></div>
+          <div class="summary-line highlight"><span>Net Outstanding Due:</span> <strong>${currency(closingBalance)}</strong></div>
+        </div>
+      </div>
+
+      <table class="statement-table">
+        <thead>
+          <tr>
+            <th style="width:14%;">Date</th>
+            <th style="width:40%;">Particulars / Description</th>
+            <th style="width:14%;">Reference</th>
+            <th class="money" style="width:11%;">Billed (Dr)</th>
+            <th class="money" style="width:11%;">Paid (Cr)</th>
+            <th class="money" style="width:10%;">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${startDate ? `
+            <tr style="background:#f8fafc; font-style:italic;">
+              <td>${dateText(startDate)}</td>
+              <td colspan="2">Opening Balance as of ${dateText(startDate)}</td>
+              <td class="money">—</td>
+              <td class="money">—</td>
+              <td class="money" style="font-weight:700;">${currency(openingBalance)}</td>
+            </tr>
+          ` : ""}
+          ${periodTx.length ? periodTx.map(t => `
+            <tr>
+              <td>${dateText(t.date)}</td>
+              <td><strong>${t.particulars}</strong></td>
+              <td>${escape(t.reference)}</td>
+              <td class="money">${t.debit > 0 ? currency(t.debit) : "—"}</td>
+              <td class="money">${t.credit > 0 ? currency(t.credit) : "—"}</td>
+              <td class="money" style="font-weight:700;">${currency(t.runningBalance)}</td>
+            </tr>
+          `).join("") : `
+            <tr>
+              <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                No financial transactions recorded for this client in the selected duration.
+              </td>
+            </tr>
+          `}
+        </tbody>
+        <tfoot>
+          <tr class="statement-total-row">
+            <td colspan="3"><strong>Total Statement Activity</strong></td>
+            <td class="money"><strong>${currency(totalPeriodBilled)}</strong></td>
+            <td class="money"><strong>${currency(totalPeriodPaid)}</strong></td>
+            <td class="money highlight-balance"><strong>${currency(closingBalance)}</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="statement-footer">
+        <p>This statement of accounts reflects all transactions recorded up to ${dateText(today())}.</p>
+        <p>Thank you for partnering with <strong>${escape(data.settings.businessName || "Total Berries")}</strong>.</p>
+      </div>
+    </div>
+  `;
+
+  window.print();
+}
+
+function printInvoice(invoiceId) {
+  const i = data.invoices.find(x => x.id === invoiceId);
+  if (!i) return;
+
+  const client = data.clients.find(c => c.id === i.clientId) || {};
+  const project = data.projects.find(p => p.id === i.projectId) || {};
+  const payments = data.payments.filter(p => p.invoiceId === i.id);
+  const gstAmount = Number(i.gstRate) ? (Number(i.amount) * Number(i.gstRate) / 100) : 0;
+  const total = invoiceAmount(i);
+  const due = balance(i);
+
+  const printArea = document.getElementById("print-area");
+  if (!printArea) return;
+
+  printArea.innerHTML = `
+    <div class="print-invoice">
+      <div class="invoice-print-header">
+        <div>
+          <h1>${escape(data.settings.businessName || "Total Berries")}</h1>
+          <p style="margin:2px 0; color:#475569; font-weight:600;">Tax Invoice</p>
+          ${data.settings.gstin ? `<p style="margin:2px 0; color:#64748b; font-size:11px;">GSTIN: ${escape(data.settings.gstin)}</p>` : ""}
+        </div>
+        <div class="invoice-print-meta">
+          <h2>INVOICE</h2>
+          <p style="margin:2px 0;"><strong>Invoice #:</strong> ${escape(i.number)}</p>
+          <p style="margin:2px 0;"><strong>Invoice Date:</strong> ${dateText(i.issueDate)}</p>
+          <p style="margin:2px 0;"><strong>Due Date:</strong> ${dateText(i.dueDate)}</p>
+          <p style="margin:2px 0;"><strong>Status:</strong> ${invoiceStatus(i).toUpperCase()}</p>
+        </div>
+      </div>
+
+      <div class="statement-parties">
+        <div class="party-box">
+          <div class="party-title">BILLED TO</div>
+          <div class="party-name">${escape(client.name || "Client")}</div>
+          ${client.contact ? `<div style="font-size:12px;">Attn: ${escape(client.contact)}</div>` : ""}
+          ${client.email ? `<div style="font-size:12px; color:#475569;">${escape(client.email)}</div>` : ""}
+          ${client.phone ? `<div style="font-size:12px; color:#475569;">${escape(client.phone)}</div>` : ""}
+          ${client.address ? `<div style="font-size:11px; margin-top:4px; color:#64748b;">${escape(client.address)}</div>` : ""}
+          ${client.gstin ? `<div style="font-size:11px; margin-top:4px; font-weight:600;">GSTIN: ${escape(client.gstin)}</div>` : ""}
+        </div>
+        ${project.name || i.reference ? `
+          <div class="party-box" style="max-width:280px;">
+            <div class="party-title">PROJECT &amp; REFERENCE</div>
+            ${project.name ? `<div><strong>Project:</strong> ${escape(project.name)}</div>` : ""}
+            ${i.reference ? `<div><strong>PO / Ref:</strong> ${escape(i.reference)}</div>` : ""}
+          </div>
+        ` : ""}
+      </div>
+
+      <table class="invoice-print-table">
+        <thead>
+          <tr>
+            <th style="width:50%;">Description / Scope of Work</th>
+            <th class="money" style="width:20%;">Amount (INR)</th>
+            <th class="money" style="width:15%;">GST Rate</th>
+            <th class="money" style="width:15%;">Total (INR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>${escape(project.name || `Services for ${client.name}`)}</strong>
+              ${i.notes ? `<div style="font-size:11px; color:#475569; margin-top:4px;">${escape(i.notes)}</div>` : ""}
+            </td>
+            <td class="money">${currency(i.amount)}</td>
+            <td class="money">${Number(i.gstRate) ? `${i.gstRate}%` : "0%"}</td>
+            <td class="money">${currency(i.amount)}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="money" style="border-top:2px solid #cbd5e1;">Subtotal:</td>
+            <td class="money" style="border-top:2px solid #cbd5e1;"><strong>${currency(i.amount)}</strong></td>
+          </tr>
+          ${Number(i.gstRate) ? `
+            <tr>
+              <td colspan="3" class="money">GST (${i.gstRate}%):</td>
+              <td class="money"><strong>${currency(gstAmount)}</strong></td>
+            </tr>
+          ` : ""}
+          <tr style="font-size:14px; background:#f8fafc;">
+            <td colspan="3" class="money" style="border-top:2px solid #0f172a;"><strong>Invoice Total:</strong></td>
+            <td class="money" style="border-top:2px solid #0f172a; color:#0066ff;"><strong>${currency(total)}</strong></td>
+          </tr>
+          ${payments.length ? `
+            <tr>
+              <td colspan="3" class="money">Total Paid:</td>
+              <td class="money" style="color:#10b981;"><strong>${currency(paidAmount(i.id))}</strong></td>
+            </tr>
+            <tr style="font-size:14px; background:#eff6ff;">
+              <td colspan="3" class="money" style="border-top:1.5px solid #bfdbfe;"><strong>Balance Due:</strong></td>
+              <td class="money" style="border-top:1.5px solid #bfdbfe; color:#0066ff;"><strong>${currency(due)}</strong></td>
+            </tr>
+          ` : ""}
+        </tfoot>
+      </table>
+
+      ${payments.length ? `
+        <div style="margin-top:20px;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b; margin-bottom:6px;">Payment History</div>
+          <table class="statement-table" style="font-size:11px;">
+            <thead>
+              <tr><th>Date</th><th>Mode</th><th>Reference</th><th class="money">Amount Paid</th></tr>
+            </thead>
+            <tbody>
+              ${payments.map(p => `
+                <tr>
+                  <td>${dateText(p.date)}</td>
+                  <td>${escape(p.mode)}</td>
+                  <td>${escape(p.reference || "—")}</td>
+                  <td class="money" style="font-weight:700;">${currency(p.amount)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      ` : ""}
+
+      <div class="invoice-print-footer">
+        <p>Thank you for your business!</p>
+        <p style="font-size:10px; color:#94a3b8;">Generated by Total Berries Freelance Ledger &middot; ${dateText(today())}</p>
+      </div>
+    </div>
+  `;
+
+  window.print();
+}
+
+/* ==========================================================================
    EVENT LISTENERS & DISPATCHERS
    ========================================================================== */
 document.addEventListener("click", event => {
@@ -1740,6 +2231,18 @@ document.addEventListener("click", event => {
   const { action, id } = target.dataset;
 
   if (action === "new-invoice") invoiceForm();
+  else if (action === "edit-invoice") invoiceForm(id);
+  else if (action === "print-invoice") printInvoice(id);
+  else if (action === "client-ledger") clientLedger(id);
+  else if (action === "ledger-preset") clientLedger(id, "", "", target.dataset.preset);
+  else if (action === "apply-ledger-dates") {
+    const s = document.getElementById("ledger-start")?.value;
+    const e = document.getElementById("ledger-end")?.value;
+    clientLedger(id, s, e, "custom");
+  }
+  else if (action === "print-client-ledger") {
+    printClientLedger(target.dataset.id, target.dataset.start, target.dataset.end);
+  }
   else if (action === "new-payment") paymentForm(id);
   else if (action === "new-expense") expenseForm();
   else if (action === "new-client") clientForm();
@@ -1806,16 +2309,43 @@ document.addEventListener("click", event => {
 document.addEventListener("submit", event => {
   const form = event.target;
   event.preventDefault();
+  const formId = form.getAttribute("id");
 
-  if (form.id === "auth-form") {
+  if (formId === "auth-form") {
     handleAuthSubmit(form);
     return;
   }
 
   const values = formObject(form);
 
-  if (form.id === "invoice-form") {
+  if (formId === "invoice-form") {
+    const id = form.dataset.id || values.invoiceId || values.id;
     const isDraft = new FormData(form).get("draft") === "1";
+
+    if (id) {
+      const existing = data.invoices.find(x => x.id === id);
+      if (existing) {
+        const prevNumber = existing.number;
+        Object.assign(existing, {
+          ...values,
+          amount: Number(values.amount),
+          gstRate: Number(values.gstRate),
+          draft: isDraft
+        });
+        delete existing.invoiceId;
+        if (prevNumber !== values.number) {
+          data.payments.forEach(p => {
+            if (p.invoiceId === id) p.invoiceNumber = values.number;
+          });
+        }
+        save();
+        closeModal();
+        render();
+        notify(`Invoice ${values.number} updated.`);
+        return;
+      }
+    }
+
     data.invoices.push({
       id: uid(),
       ...values,
@@ -1830,7 +2360,7 @@ document.addEventListener("submit", event => {
     notify(isDraft ? "Draft invoice saved." : "Invoice issued successfully.");
   }
 
-  if (form.id === "payment-form") {
+  if (formId === "payment-form") {
     const invoice = data.invoices.find(i => i.id === values.invoiceId);
     if (!invoice || Number(values.amount) > balance(invoice) + 0.01) {
       return notify("Deposit cannot exceed the outstanding balance.");
@@ -1847,7 +2377,7 @@ document.addEventListener("submit", event => {
     notify("Deposit recorded successfully.");
   }
 
-  if (form.id === "expense-form") {
+  if (formId === "expense-form") {
     data.expenses.push({
       id: uid(),
       ...values,
@@ -1859,7 +2389,7 @@ document.addEventListener("submit", event => {
     notify("Expense recorded.");
   }
 
-  if (form.id === "client-form") {
+  if (formId === "client-form") {
     const id = form.dataset.id;
     if (id) {
       Object.assign(data.clients.find(c => c.id === id), values);
@@ -1872,7 +2402,7 @@ document.addEventListener("submit", event => {
     notify("Client profile saved.");
   }
 
-  if (form.id === "project-form") {
+  if (formId === "project-form") {
     const id = form.dataset.id;
     if (id) {
       Object.assign(data.projects.find(p => p.id === id), values);
@@ -1910,6 +2440,19 @@ document.addEventListener("input", event => {
 
 document.getElementById("modal-backdrop").addEventListener("click", e => {
   if (e.target.id === "modal-backdrop") closeModal();
+});
+
+document.addEventListener("change", event => {
+  if (event.target.id === "ledger-client-select") {
+    const s = document.getElementById("ledger-start")?.value;
+    const e = document.getElementById("ledger-end")?.value;
+    clientLedger(event.target.value, s, e, "custom");
+  } else if (event.target.id === "ledger-start" || event.target.id === "ledger-end") {
+    const cId = document.getElementById("ledger-client-select")?.value;
+    const s = document.getElementById("ledger-start")?.value;
+    const e = document.getElementById("ledger-end")?.value;
+    clientLedger(cId, s, e, "custom");
+  }
 });
 
 document.getElementById("backup-button")?.addEventListener("click", exportBackup);

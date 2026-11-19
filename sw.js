@@ -1,9 +1,9 @@
-const CACHE = "total-berries-v14";
+const CACHE = "total-berries-v15";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=10.0",
-  "./app.js?v=12.0",
+  "./styles.css?v=11.0",
+  "./app.js?v=13.0",
   "./manifest.webmanifest?v=14.0",
   "./icon.svg?v=14.0",
   "./favicon-32x32.png?v=14.0",
