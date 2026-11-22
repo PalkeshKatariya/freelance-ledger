@@ -35,7 +35,7 @@
     if ('caches' in window) {
       caches.keys().then(function (keys) {
         keys.forEach(function (k) {
-          if (k !== 'total-berries-v15') { caches.delete(k); }
+          if (k !== 'total-berries-v16') { caches.delete(k); }
         });
       });
     }
@@ -55,7 +55,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=14.0" />
   <link rel="shortcut icon" href="favicon.ico?v=14.0" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=14.0" />
-  <link rel="stylesheet" href="styles.css?v=11.0" />
+  <link rel="stylesheet" href="styles.css?v=12.0" />
   <title>Total Berries · Freelance Ledger</title>
 </head>
 
@@ -67,7 +67,8 @@
         <div class="brand-avatar" title="Total Berries">
           <svg width="22" height="22" viewBox="0 0 128 128" fill="none">
             <circle cx="64" cy="64" r="54" fill="#ffffff" />
-            <path fill="#0066ff" d="M72 40H52v9h8v9c-9 1-15 8-15 17 0 10 8 18 20 18 8 0 14-3 18-7l-6-7c-3 3-7 5-12 5-6 0-11-3-11-9 0-5 4-9 11-9h7V55h6V40zm-7 27v9h9V67H65z"/>
+            <path fill="#0066ff"
+              d="M72 40H52v9h8v9c-9 1-15 8-15 17 0 10 8 18 20 18 8 0 14-3 18-7l-6-7c-3 3-7 5-12 5-6 0-11-3-11-9 0-5 4-9 11-9h7V55h6V40zm-7 27v9h9V67H65z" />
           </svg>
         </div>
         <div class="brand-info">
@@ -283,7 +284,7 @@
   <div id="print-area"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=13.0"></script>
+  <script src="app.js?v=14.0"></script>
 </body>
 
 </html>

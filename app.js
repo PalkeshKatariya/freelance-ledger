@@ -15,7 +15,10 @@ const emptyData = () => ({
     invoicePrefix: "TB",
     nextInvoice: 1,
     defaultDueDays: 15,
-    theme: "light"
+    theme: "light",
+    cashOpeningBalance: 0,
+    cashOpeningDate: "",
+    cashOpeningNotes: ""
   },
   clients: [],
   projects: [],
@@ -567,7 +570,10 @@ function dashboard() {
   const month = monthRange();
   const income = paymentsInRange(month.start, month.end);
   const expenses = expensesInRange(month.start, month.end);
-  const totalBalance = Math.max(0, income - expenses);
+  const openingCash = Number(data.settings?.cashOpeningBalance || 0);
+  const allTimeIncome = data.payments.reduce((s, p) => s + Number(p.amount || 0), 0);
+  const allTimeExpenses = data.expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const totalBalance = openingCash + allTimeIncome - allTimeExpenses;
   const outstanding = data.invoices.filter(i => !i.draft).reduce((sum, i) => sum + balance(i), 0);
   const overdue = data.invoices.filter(i => invoiceStatus(i) === "Overdue").reduce((sum, i) => sum + balance(i), 0);
   const due = [...data.invoices].filter(i => !i.draft && balance(i) > 0).sort((a,b) => (a.dueDate || "9999").localeCompare(b.dueDate || "9999")).slice(0, 5);
@@ -597,8 +603,23 @@ function dashboard() {
         <div class="hero-balance-group">
           <div class="hero-badge-icon">₹</div>
           <div class="hero-balance-meta">
-            <span class="hero-balance-label">Cash on Hand &middot; Total Balance</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="hero-balance-label">Cash on Hand &middot; Total Balance</span>
+              <button type="button" class="hero-edit-balance-btn" data-action="edit-cash-opening" title="Edit Opening Balance in Cash">
+                ✏️ ${openingCash > 0 ? "Edit Opening" : "Add Opening"}
+              </button>
+            </div>
             <div class="hero-balance-amount">${currency(totalBalance)}</div>
+            ${openingCash > 0 ? `
+              <div class="hero-balance-sub">
+                <span>Opening Cash: <strong>${currency(openingCash)}</strong></span>
+                ${data.settings.cashOpeningDate ? `<span style="opacity:0.8;">(as of ${dateText(data.settings.cashOpeningDate)})</span>` : ""}
+              </div>
+            ` : `
+              <div class="hero-balance-sub" style="opacity:0.85;">
+                <span>No opening cash set &middot; <a href="javascript:void(0)" data-action="edit-cash-opening" style="color:#ffffff; text-decoration:underline;">+ Add opening balance</a></span>
+              </div>
+            `}
           </div>
         </div>
         <div class="hero-pill-badge">
@@ -868,19 +889,41 @@ function invoices() {
 function payments() {
   const rows = [...data.payments].sort((a,b) => b.date.localeCompare(a.date));
   const totalReceived = rows.reduce((s, p) => s + Number(p.amount), 0);
+  const openingCash = Number(data.settings?.cashOpeningBalance || 0);
 
   return `
     ${heading("Payments Received", "Track incoming payments, UPI transfers, and bank deposits.", `
-      <button class="pill-btn pill-btn-white" data-action="new-payment">
-        <span class="btn-icon">↓</span>
-        <span>Record Deposit</span>
-      </button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="pill-btn pill-btn-ghost" data-action="edit-cash-opening" title="Set or edit opening cash balance">
+          <span>💵 Opening Cash</span>
+        </button>
+        <button class="pill-btn pill-btn-white" data-action="new-payment">
+          <span class="btn-icon">↓</span>
+          <span>Record Deposit</span>
+        </button>
+      </div>
     `)}
 
     <div class="toolbar">
-      <div class="help">Lifetime revenue received: <strong style="color:var(--accent-orange);">${currency(totalReceived)}</strong></div>
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div class="help">Lifetime revenue received: <strong style="color:var(--accent-orange);">${currency(totalReceived)}</strong></div>
+        <div class="help" style="border-left:1px solid var(--border-card); padding-left:12px;">
+          Opening Cash: <strong style="color:var(--text-primary);">${currency(openingCash)}</strong>
+          <button type="button" class="pill-btn pill-btn-ghost pill-btn-xs" data-action="edit-cash-opening" style="margin-left:6px;" title="Edit cash opening balance">✏️ Edit</button>
+        </div>
+      </div>
       <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="export-report">Export Log</button>
     </div>
+
+    ${openingCash > 0 && !rows.length ? `
+      <div style="margin-bottom:16px; padding:14px 16px; background:var(--bg-card); border:1px solid var(--border-card); border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-weight:750; color:var(--text-primary); font-size:14px;">💵 Cash on Hand Opening Balance: ${currency(openingCash)}</div>
+          <div class="help" style="margin-top:2px;">Initial cash recorded ${data.settings.cashOpeningDate ? `as of ${dateText(data.settings.cashOpeningDate)}` : ""}</div>
+        </div>
+        <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-cash-opening">✏️ Edit Opening Cash</button>
+      </div>
+    ` : ""}
 
     ${rows.length ? `
       <!-- Desktop Table View -->
@@ -894,6 +937,7 @@ function payments() {
               <th>Mode</th>
               <th>Reference / UTR</th>
               <th class="money">Amount</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -907,6 +951,9 @@ function payments() {
                   <td><span class="status status-paid">${escape(p.mode)}</span></td>
                   <td>${escape(p.reference || "—")}</td>
                   <td class="money positive">+${currency(p.amount)}</td>
+                  <td style="text-align:right; white-space:nowrap;">
+                    <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-payment" data-id="${p.id}" title="Edit deposit">Edit</button>
+                  </td>
                 </tr>
               `;
             }).join("")}
@@ -932,7 +979,10 @@ function payments() {
               </div>
               <div class="imc-bottom">
                 <span>Ref: ${escape(p.reference || "—")}</span>
-                <span>${dateText(p.date)}</span>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <span>${dateText(p.date)}</span>
+                  <button class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-payment" data-id="${p.id}" style="padding:2px 8px; font-size:11px;">Edit</button>
+                </div>
               </div>
             </article>
           `;
@@ -1048,12 +1098,13 @@ function clients() {
           </thead>
           <tbody>
             ${rows.map(c => {
-              const outstanding = data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s,i) => s + balance(i), 0);
+              const outstanding = Number(c.openingBalance || 0) + data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s,i) => s + balance(i), 0);
               return `
                 <tr>
                   <td>
                     <div class="primary-text">${escape(c.name)}</div>
                     <div class="secondary-text">${escape(c.address || "")}</div>
+                    ${Number(c.openingBalance) > 0 ? `<div style="font-size:11px; color:var(--accent-orange); margin-top:2px;">Opening: ${currency(c.openingBalance)} (${escape(c.openingBalanceMode || "Cash")})</div>` : ""}
                   </td>
                   <td>
                     <div class="primary-text">${escape(c.email || "—")}</div>
@@ -1075,13 +1126,14 @@ function clients() {
       <!-- Mobile Touch-Optimized Cards -->
       <div class="mobile-cards-list mobile-only">
         ${rows.map(c => {
-          const outstanding = data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s,i) => s + balance(i), 0);
+          const outstanding = Number(c.openingBalance || 0) + data.invoices.filter(i => i.clientId === c.id && !i.draft).reduce((s,i) => s + balance(i), 0);
           return `
             <article class="client-mobile-card">
               <div class="imc-top">
                 <div class="imc-left">
                   <div class="imc-number">${escape(c.name)}</div>
                   <div class="imc-client">${escape(c.email || c.phone || "No contact info")}</div>
+                  ${Number(c.openingBalance) > 0 ? `<div style="font-size:10.5px; color:var(--accent-orange); margin-top:2px;">Opening: ${currency(c.openingBalance)} (${escape(c.openingBalanceMode || "Cash")})</div>` : ""}
                 </div>
                 <div class="imc-right">
                   <div class="imc-amount money">${currency(outstanding)}</div>
@@ -1161,7 +1213,8 @@ function reports() {
   const max = Math.max(1, ...values.flatMap(v => [v.income, v.expense]));
   const received = values.reduce((s,v) => s + v.income, 0);
   const spent = values.reduce((s,v) => s + v.expense, 0);
-  const netSurplus = received - spent;
+  const openingCash = Number(data.settings?.cashOpeningBalance || 0);
+  const netSurplus = openingCash + received - spent;
   const unpaid = data.invoices.reduce((s,i) => s + balance(i), 0);
 
   const byClient = data.clients.map(c => ({
@@ -1172,9 +1225,14 @@ function reports() {
 
   return `
     ${heading("Financial Analytics", "Six-month cashflow velocity and client profitability.", `
-      <button class="pill-btn pill-btn-ghost" data-action="export-report">
-        <span>Export Summary</span>
-      </button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="pill-btn pill-btn-ghost" data-action="edit-cash-opening">
+          <span>💵 Opening Cash</span>
+        </button>
+        <button class="pill-btn pill-btn-ghost" data-action="export-report">
+          <span>Export Summary</span>
+        </button>
+      </div>
     `)}
 
     <section class="metrics">
@@ -1191,7 +1249,7 @@ function reports() {
       <article class="metric-card">
         <div class="metric-label">Cash Surplus</div>
         <div class="metric-value">${currency(netSurplus)}</div>
-        <div class="metric-note">Net profits generated</div>
+        <div class="metric-note">${openingCash > 0 ? `Includes ${currency(openingCash)} opening cash` : "Net profits generated"} &middot; <a href="javascript:void(0)" data-action="edit-cash-opening" style="color:var(--accent-orange); font-weight:700;">Edit</a></div>
       </article>
       <article class="metric-card">
         <div class="metric-label">Unpaid Receivables</div>
@@ -1290,6 +1348,21 @@ function settings() {
                 <option value="30" ${s.defaultDueDays==30?"selected":""}>30 days</option>
                 <option value="45" ${s.defaultDueDays==45?"selected":""}>45 days</option>
               </select>
+            </div>
+            <div class="field">
+              <label>Cash Opening Balance (INR)</label>
+              <div style="display:flex; gap:6px;">
+                <input name="cashOpeningBalance" type="number" min="0" step="0.01" value="${Number(s.cashOpeningBalance) || ""}" placeholder="0.00" style="flex:1;" />
+                <button type="button" class="pill-btn pill-btn-ghost pill-btn-sm" data-action="edit-cash-opening" title="Open detailed editor" style="white-space:nowrap;">✏️ Edit</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Cash Opening Date</label>
+              <input name="cashOpeningDate" type="date" value="${s.cashOpeningDate || ""}" />
+            </div>
+            <div class="field full">
+              <label>Cash Opening Notes <span class="help">optional</span></label>
+              <input name="cashOpeningNotes" value="${escape(s.cashOpeningNotes || "")}" placeholder="E.g., Starting physical cash in drawer, register, or safe" />
             </div>
           </div>
           <div class="form-actions">
@@ -1466,59 +1539,123 @@ function invoiceForm(id = "") {
   `);
 }
 
-function paymentForm(invoiceId = "") {
-  const available = data.invoices.filter(i => !i.draft && balance(i) > 0.005);
-  if (!available.length) {
+function paymentForm(invoiceId = "", paymentId = "") {
+  const isEdit = Boolean(paymentId);
+  const pmt = isEdit ? (data.payments.find(x => x.id === paymentId) || {}) : {};
+  const currentInvoiceId = isEdit ? pmt.invoiceId : invoiceId;
+
+  const available = data.invoices.filter(i => (!i.draft && balance(i) > 0.005) || (isEdit && i.id === currentInvoiceId));
+  if (!available.length && !isEdit) {
     notify("Create an unpaid invoice before recording a payment.");
     return;
   }
-  const selected = available.find(i => i.id === invoiceId) || available[0];
-  showModal("Record Deposit", `
-    <form class="form" id="payment-form">
+  const selected = isEdit 
+    ? (data.invoices.find(i => i.id === currentInvoiceId) || available[0])
+    : (available.find(i => i.id === invoiceId) || available[0]);
+
+  const maxAllowed = isEdit
+    ? (selected ? balance(selected) + Number(pmt.amount || 0) : 99999999)
+    : (selected ? balance(selected) : 0);
+
+  const currentMode = isEdit ? (pmt.mode || "Cash") : "Cash";
+
+  showModal(isEdit ? "Edit Deposit / Payment" : "Record Deposit", `
+    <form class="form" id="payment-form" ${isEdit ? `data-payment-id="${escape(paymentId)}"` : ""}>
+      ${isEdit ? `<input type="hidden" name="paymentId" value="${escape(paymentId)}" />` : ""}
       <div class="form-grid">
         <div class="field full">
           <label>Target Invoice</label>
           <select name="invoiceId" required>
             ${available.map(i => `
-              <option value="${i.id}" ${i.id === selected.id ? "selected" : ""}>
-                ${escape(i.number)} &middot; ${escape(clientName(i.clientId))} (${currency(balance(i))} due)
+              <option value="${i.id}" ${i.id === (selected ? selected.id : "") ? "selected" : ""}>
+                ${escape(i.number)} &middot; ${escape(clientName(i.clientId))} (${currency(isEdit && i.id === currentInvoiceId ? balance(i) + Number(pmt.amount || 0) : balance(i))} due)
               </option>
             `).join("")}
           </select>
         </div>
         <div class="field">
           <label>Amount Received (INR)</label>
-          <input name="amount" type="number" min="0.01" step="0.01" max="${balance(selected)}" value="${balance(selected).toFixed(2)}" required />
+          <input name="amount" type="number" min="0.01" step="0.01" max="${maxAllowed.toFixed(2)}" value="${isEdit ? pmt.amount : (selected ? balance(selected).toFixed(2) : "")}" required />
         </div>
         <div class="field">
           <label>Deposit Date</label>
-          <input name="date" type="date" value="${today()}" required />
+          <input name="date" type="date" value="${isEdit ? pmt.date : today()}" required />
         </div>
         <div class="field">
           <label>Payment Method</label>
           <select name="mode">
-            <option>UPI</option>
-            <option>Bank transfer</option>
-            <option>Cash</option>
-            <option>Card</option>
-            <option>Cheque</option>
-            <option>Other</option>
+            <option ${currentMode === "UPI" ? "selected" : ""}>UPI</option>
+            <option ${currentMode === "Bank transfer" ? "selected" : ""}>Bank transfer</option>
+            <option ${currentMode === "Cash" ? "selected" : ""}>Cash</option>
+            <option ${currentMode === "Card" ? "selected" : ""}>Card</option>
+            <option ${currentMode === "Cheque" ? "selected" : ""}>Cheque</option>
+            <option ${currentMode === "Other" ? "selected" : ""}>Other</option>
           </select>
         </div>
         <div class="field">
           <label>Reference / UTR #</label>
-          <input name="reference" placeholder="UTR or transaction ID" />
+          <input name="reference" value="${escape(isEdit ? (pmt.reference || "") : "")}" placeholder="UTR or transaction ID" />
         </div>
         <div class="field full">
           <label>Deposit Notes</label>
-          <input name="notes" placeholder="Any useful context or memo" />
+          <input name="notes" value="${escape(isEdit ? (pmt.notes || "") : "")}" placeholder="Any useful context or memo" />
         </div>
       </div>
       <div class="form-actions">
-        <span></span>
+        ${isEdit ? `<button type="button" class="pill-btn pill-btn-danger" data-action="delete-payment" data-id="${escape(paymentId)}">Delete</button>` : "<span></span>"}
         <div class="form-actions-right">
           <button type="button" class="pill-btn pill-btn-ghost" data-action="close-modal">Cancel</button>
-          <button class="pill-btn pill-btn-neon">Save Deposit</button>
+          <button class="pill-btn pill-btn-neon">${isEdit ? "Update Deposit" : "Save Deposit"}</button>
+        </div>
+      </div>
+    </form>
+  `);
+}
+
+function cashOpeningBalanceModal() {
+  const current = Number(data.settings?.cashOpeningBalance || 0);
+  const currentDate = data.settings?.cashOpeningDate || today();
+  const currentNotes = data.settings?.cashOpeningNotes || "";
+  const isSet = current > 0;
+
+  showModal(isSet ? "Edit Opening Balance in Cash" : "Add Opening Balance in Cash", `
+    <form class="form" id="cash-opening-form">
+      <div style="background:var(--bg-canvas); border:1px solid var(--border-card); border-radius:var(--radius-md); padding:14px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:36px; height:36px; border-radius:50%; background:var(--accent-orange-dim); color:var(--accent-orange); display:grid; place-items:center; font-size:18px; font-weight:800;">💵</div>
+          <div>
+            <div style="font-weight:750; color:var(--text-primary); font-size:14px;">Cash on Hand &middot; Opening Balance</div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+              Set or update your starting physical cash before recorded invoices and expenses. This is fully editable at any time.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field full">
+          <label>Cash Opening Balance (INR)</label>
+          <input name="cashOpeningBalance" type="number" min="0" step="0.01" value="${current || ""}" placeholder="0.00" required autofocus />
+        </div>
+        <div class="field">
+          <label>As-of Date</label>
+          <input name="cashOpeningDate" type="date" value="${currentDate}" required />
+        </div>
+        <div class="field">
+          <label>Account Mode</label>
+          <input value="Cash (Physical Cash in Hand)" readonly style="background:var(--bg-canvas); cursor:not-allowed;" />
+        </div>
+        <div class="field full">
+          <label>Notes / Memo <span class="help">optional</span></label>
+          <input name="cashOpeningNotes" value="${escape(currentNotes)}" placeholder="E.g., Starting cash in drawer, register, or safe" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        ${isSet ? `<button type="button" class="pill-btn pill-btn-danger" data-action="reset-cash-opening">Reset to ₹0</button>` : `<span></span>`}
+        <div class="form-actions-right">
+          <button type="button" class="pill-btn pill-btn-ghost" data-action="close-modal">Cancel</button>
+          <button class="pill-btn pill-btn-neon">${isSet ? "Update Opening Balance" : "Save Opening Balance"}</button>
         </div>
       </div>
     </form>
@@ -1598,6 +1735,19 @@ function clientFields(c = {}) {
       <div class="field">
         <label>Contact Person</label>
         <input name="contact" value="${escape(c.contact)}" placeholder="Accounts Manager" />
+      </div>
+      <div class="field">
+        <label>Opening Balance (INR) <span class="help">optional</span></label>
+        <input name="openingBalance" type="number" step="0.01" value="${c.openingBalance !== undefined ? c.openingBalance : ""}" placeholder="0.00" />
+      </div>
+      <div class="field">
+        <label>Opening Balance Mode <span class="help">optional</span></label>
+        <select name="openingBalanceMode">
+          <option value="Cash" ${(!c.openingBalanceMode || c.openingBalanceMode === "Cash") ? "selected" : ""}>Cash</option>
+          <option value="Bank transfer" ${c.openingBalanceMode === "Bank transfer" ? "selected" : ""}>Bank transfer</option>
+          <option value="UPI" ${c.openingBalanceMode === "UPI" ? "selected" : ""}>UPI</option>
+          <option value="Other" ${c.openingBalanceMode === "Other" ? "selected" : ""}>Other</option>
+        </select>
       </div>
       <div class="field full">
         <label>Billing Address</label>
@@ -1766,6 +1916,20 @@ function getLedgerData(clientId, startDate = "", endDate = "") {
   const pmts = data.payments.filter(p => invIds.has(p.invoiceId));
 
   const allTx = [];
+
+  if (Number(client.openingBalance) > 0) {
+    allTx.push({
+      id: "op-" + client.id,
+      date: client.createdDate || "2000-01-01",
+      type: "OPENING",
+      number: "OP-BAL",
+      particulars: `Opening Balance (${escape(client.openingBalanceMode || "Cash")})`,
+      reference: "Initial Balance",
+      debit: Number(client.openingBalance),
+      credit: 0
+    });
+  }
+
   invs.forEach(i => {
     allTx.push({
       id: i.id,
@@ -1817,7 +1981,7 @@ function getLedgerData(clientId, startDate = "", endDate = "") {
   });
 
   const closingBalance = running;
-  const totalLifetimeOutstanding = invs.reduce((s,i) => s + balance(i), 0);
+  const totalLifetimeOutstanding = Number(client.openingBalance || 0) + invs.reduce((s,i) => s + balance(i), 0);
 
   return {
     client,
@@ -2243,7 +2407,19 @@ document.addEventListener("click", event => {
   else if (action === "print-client-ledger") {
     printClientLedger(target.dataset.id, target.dataset.start, target.dataset.end);
   }
+  else if (action === "edit-cash-opening") cashOpeningBalanceModal();
+  else if (action === "reset-cash-opening") {
+    if (confirm("Reset cash opening balance to ₹0?")) {
+      data.settings.cashOpeningBalance = 0;
+      data.settings.cashOpeningNotes = "";
+      save();
+      closeModal();
+      render();
+      notify("Cash opening balance reset to ₹0.");
+    }
+  }
   else if (action === "new-payment") paymentForm(id);
+  else if (action === "edit-payment") paymentForm("", id);
   else if (action === "new-expense") expenseForm();
   else if (action === "new-client") clientForm();
   else if (action === "edit-client") clientForm(id);
@@ -2360,8 +2536,38 @@ document.addEventListener("submit", event => {
     notify(isDraft ? "Draft invoice saved." : "Invoice issued successfully.");
   }
 
+  if (formId === "cash-opening-form") {
+    data.settings.cashOpeningBalance = parseFloat(values.cashOpeningBalance) || 0;
+    data.settings.cashOpeningDate = values.cashOpeningDate || today();
+    data.settings.cashOpeningNotes = values.cashOpeningNotes || "";
+    save();
+    closeModal();
+    render();
+    notify("Opening balance in cash updated! 💵");
+    return;
+  }
+
   if (formId === "payment-form") {
+    const paymentId = form.dataset.paymentId || values.paymentId;
     const invoice = data.invoices.find(i => i.id === values.invoiceId);
+    
+    if (paymentId) {
+      const existing = data.payments.find(p => p.id === paymentId);
+      if (existing) {
+        Object.assign(existing, {
+          ...values,
+          amount: Number(values.amount),
+          invoiceNumber: invoice ? invoice.number : existing.invoiceNumber
+        });
+        delete existing.paymentId;
+        save();
+        closeModal();
+        render();
+        notify("Deposit updated successfully.");
+        return;
+      }
+    }
+
     if (!invoice || Number(values.amount) > balance(invoice) + 0.01) {
       return notify("Deposit cannot exceed the outstanding balance.");
     }
@@ -2391,10 +2597,15 @@ document.addEventListener("submit", event => {
 
   if (formId === "client-form") {
     const id = form.dataset.id;
+    const clientPayload = {
+      ...values,
+      openingBalance: parseFloat(values.openingBalance) || 0,
+      openingBalanceMode: values.openingBalanceMode || "Cash"
+    };
     if (id) {
-      Object.assign(data.clients.find(c => c.id === id), values);
+      Object.assign(data.clients.find(c => c.id === id), clientPayload);
     } else {
-      data.clients.push({ id: uid(), ...values });
+      data.clients.push({ id: uid(), createdDate: today(), ...clientPayload });
     }
     save();
     closeModal();
@@ -2415,16 +2626,19 @@ document.addEventListener("submit", event => {
     notify("Project updated.");
   }
 
-  if (form.id === "settings-form") {
+  if (formId === "settings-form" || form.getAttribute("id") === "settings-form") {
     data.settings = {
       ...data.settings,
       ...values,
       nextInvoice: Number(values.nextInvoice),
-      defaultDueDays: Number(values.defaultDueDays)
+      defaultDueDays: Number(values.defaultDueDays),
+      cashOpeningBalance: parseFloat(values.cashOpeningBalance) || 0,
+      cashOpeningDate: values.cashOpeningDate || "",
+      cashOpeningNotes: values.cashOpeningNotes || ""
     };
     save();
     render();
-    notify("Business details updated.");
+    notify("Business profile and cash settings updated.");
   }
 });
 
